@@ -1,0 +1,8 @@
+Changelog
+
+v0.02
+* Can now detect IPS patches.
+* Added --verbose flag for the curious type.
+* Added descriptive error messages.
+* SEEK_SET is now exported by Fcntl which should improve the success rate.
+* Newlines are now printed making things legibile.
