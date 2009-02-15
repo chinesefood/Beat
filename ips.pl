@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 # ips.pl
-# version 0.02
+# version 0.03
 
 # Copyright 2009 chinesefood.
 
