@@ -6,14 +6,9 @@
 # This is a quick hack to apply IPS patches. It is distributed under
 # the terms of the GNU General Public License.
 
-if (@ARGV != 2) {
-	print STDERR <<EOF;
-Usage:
-
-$0 datafile ipsfile
-
-There are no options. Your original datafile is modified.
-EOF
+unless (@ARGV == 2) {
+	print "Usage: ips.pl FILE PATCH\n";
+    print "Patches a file using an IPS patch.\n";
 
 	exit;
 }
