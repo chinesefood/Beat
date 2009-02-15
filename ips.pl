@@ -6,14 +6,14 @@
 # This is a quick hack to apply IPS patches. It is distributed under
 # the terms of the GNU General Public License.
 
+use strict;
+
 unless (@ARGV == 2) {
 	print "Usage: ips.pl FILE PATCH\n";
     print "Patches a file using an IPS patch.\n";
 
 	exit;
 }
-
-use strict;
 
 open(PATCH, "$ARGV[1]") or die "Can't open $ARGV[1]";
 open(ROM, "+<$ARGV[0]") or die "Can't open $ARGV[0]";
