@@ -15,27 +15,27 @@ use Fcntl qw/SEEK_SET/;
 my $verbose = 0;
 
 GetOptions(
-    "verbose"   => \$verbose,
+	"verbose"   => \$verbose,
 );
 
 unless (@ARGV == 2) {
 	print "Usage: ips.pl FILE IPS_PATCH\n";
-    print "Patches FILE using an IPS patch.\n";
+	print "Patches FILE using an IPS patch.\n";
 
-    print "Copyright 2003, 2009 chinesefood (eat.more.chinese.food\@gmail.com)\n";
+	print "Copyright 2003, 2009 chinesefood (eat.more.chinese.food\@gmail.com)\n";
 	exit;
 }
 
 my $patch;
 DETECT_PATCH: for (my $i = 0; $i < @ARGV; $i++) {
-    open(PATCH, $ARGV[$i]) or die "open() failed opening $ARGV[$i] for reading.\n";
+	open(PATCH, $ARGV[$i]) or die "open() failed opening $ARGV[$i] for reading.\n";
 
-    read(PATCH, my $header, 5);
-    $patch = splice(@ARGV, $i, 1) if $header eq 'PATCH';
+	read(PATCH, my $header, 5);
+	$patch = splice(@ARGV, $i, 1) if $header eq 'PATCH';
 
-    last DETECT_PATCH if $patch;
+	last DETECT_PATCH if $patch;
 
-    close(PATCH);
+	close(PATCH);
 }
 die("Failed to detect an IPS patch.\n") unless $patch;
 
@@ -43,7 +43,7 @@ my $rom = $ARGV[0];
 open(ROM, "+<$rom") or die "open() failed opening $rom\n";
 
 PATCH_LOOP: for (;;) {
-    my $rom_offset;
+	my $rom_offset;
 	read(PATCH, $rom_offset, 3) or die("read() failed to read $rom_offset.\n");
 
 	last PATCH_LOOP if $rom_offset eq 'EOF';
@@ -60,7 +60,7 @@ PATCH_LOOP: for (;;) {
 	if ($length) {
 		print "writing $length bytes of data.\n" if $verbose;
 		read(PATCH, my $data, $length) == $length
-            or die("read() failed with $length bytes read.\n");
+			or die("read() failed with $length bytes read.\n");
 		print ROM $data;
 	}
 	else { # RLE mode
@@ -88,7 +88,7 @@ ips.pl - Patches a file with records provided from an IPS patch.
 
 =head1 SYNOPSIS
 
-    ips.pl myfilepatch.ips my.file
+	ips.pl myfilepatch.ips my.file
 
 =head1 DESCRIPTION
 
