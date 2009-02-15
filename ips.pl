@@ -1,8 +1,10 @@
 #!/usr/bin/perl -w
 
 # ips.pl
-# version 0.01cn
-#
+# version 0.02
+
+# Copyright 2009 chinesefood.
+
 # This is a quick hack to apply IPS patches. It is distributed under
 # the terms of the GNU General Public License.
 
@@ -20,7 +22,7 @@ unless (@ARGV == 2) {
 	print "Usage: ips.pl FILE IPS_PATCH\n";
     print "Patches FILE using an IPS patch.\n";
 
-    print "Changes 2009 chinesefood (eat.more.chinese.food\@gmail.com)\n";
+    print "Copyright 2003, 2009 chinesefood (eat.more.chinese.food\@gmail.com)\n";
 	exit;
 }
 
@@ -77,3 +79,31 @@ close(PATCH);
 close(ROM);
 
 exit;
+
+__END__
+
+=head1 NAME
+
+ips.pl - Patches a file with records provided from an IPS patch.
+
+=head1 SYNOPSIS
+
+    ips.pl myfilepatch.ips my.file
+
+=head1 DESCRIPTION
+
+ips.pl is a revision of a Perl script found in the wild (L<http://www.zophar.net/utilities/patchutil/ips-pl.html>) which will apply patches in the IPS format to the file specified.  The IPS file format can be found at L<http://zerosoft.zophar.net/ips.php>.  It supports RLE (Run Length Encoded) IPS patches as well.
+
+=head1 COPYRIGHT
+
+Copyright 2003, 2009 chinesefood (eat.more.goawayspam.chinese.food@goawayspam.gmail.com)
+
+The original author is unknown at the time of this release.
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+=cut
