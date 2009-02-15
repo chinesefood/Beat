@@ -66,7 +66,7 @@ PATCH_LOOP: for (;;) {
 		$length = hex( unpack("H*", $rle_size) );
 
 		print "writing $length bytes of RLE data.\n" if $verbose;
-		read(PATCH, my $byte, 1) == 1 or die "read() failed RLE data.\n";
+		read(PATCH, my $byte, 1) == 1 or die "read() failed reading RLE data.\n";
 		print ROM "$byte" x $length;
 	}
 }
