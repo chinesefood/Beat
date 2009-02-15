@@ -29,6 +29,7 @@ unless (@ARGV == 2) {
 my $patch;
 DETECT_PATCH: for (my $i = 0; $i < @ARGV; $i++) {
 	open(PATCH, $ARGV[$i]) or die "open() failed opening $ARGV[$i] for reading.\n";
+	binmode(PATCH);
 
 	read(PATCH, my $header, 5);
 	$patch = splice(@ARGV, $i, 1) if $header eq 'PATCH';
@@ -41,6 +42,7 @@ die("Failed to detect an IPS patch.\n") unless $patch;
 
 my $rom = $ARGV[0];
 open(ROM, "+<$rom") or die "open() failed opening $rom\n";
+binmode(ROM);
 
 PATCH_LOOP: for (;;) {
 	my $rom_offset;
