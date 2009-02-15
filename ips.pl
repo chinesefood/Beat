@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 # ips.pl
-# version 0.01
+# version 0.01cn
 #
 # This is a quick hack to apply IPS patches. It is distributed under
 # the terms of the GNU General Public License.
@@ -60,5 +60,5 @@ while(1) {
 		print DAT ($byte)x$length;
 	}
 
-	print STDERR "donen";
+	print STDERR "done\n";
 }
