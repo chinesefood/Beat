@@ -26,16 +26,10 @@ open(ROM, "+<$ARGV[0]") or die "Can't open $ARGV[0]";
 read(PATCH, my $header, 5);
 die "Bad magic bytes in $ARGV[1]" if $header ne "PATCH";
 
-while(1) {
+PATCH_LOOP: for (;;) {
 	read(PATCH, my $rom_offset, 3) or die "Read error";
 
-	if ($rom_offset eq "EOF") {
-        close(PATCH);
-        close(ROM);
-
-		print STDERR "Done!\n";
-		exit;
-	}
+	last PATCH_LOOP if $rom_offset eq 'EOF';
 
 	# No 24-bit number template in pack.  This works okay for now.
 	$rom_offset = hex( unpack("H*", $rom_offset) );
@@ -62,3 +56,9 @@ while(1) {
 
 	print STDERR "done\n";
 }
+
+close(PATCH);
+close(ROM);
+
+print STDERR "Done!\n";
+exit;
