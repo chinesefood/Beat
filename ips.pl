@@ -24,14 +24,20 @@ unless (@ARGV == 2) {
 	exit;
 }
 
-my ($rom, $patch) = @ARGV;
+my $patch;
+DETECT_PATCH: for (my $i = 0; $i < @ARGV; $i++) {
+    open(PATCH, $ARGV[$i]) or die "Can't open $ARGV[$i] for reading.\n";
 
-open(PATCH, $patch) or die "Can't open $patch";
+    read(PATCH, my $header, 5);
+    $patch = splice(@ARGV, $i, 1) if $header eq 'PATCH';
+last DETECT_PATCH if $patch;
+
+    close(PATCH);
+}
+die("No IPS patch provided.\n") unless $patch;
+
+my $rom = $ARGV[0];
 open(ROM, "+<$rom") or die "Can't open $rom";
-
-read(PATCH, my $header, 5);
-
-die "Bad magic bytes in $ARGV[1]" if $header ne "PATCH";
 
 PATCH_LOOP: for (;;) {
 	read(PATCH, my $rom_offset, 3) or die "Read error";
