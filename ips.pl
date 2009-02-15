@@ -37,17 +37,14 @@ while(1) {
 		exit;
 	}
 
-	# This is ugly, but unpack doesn't have anything that's
-	# very helpful for THREE-byte numbers.
-	$rom_offset = ord(substr($rom_offset,0,1))*256*256 +
-	ord(substr($rom_offset,1,1))*256 +
-	ord(substr($rom_offset,2,1));
+	# No 24-bit number template in pack.  This works okay for now.
+	$rom_offset = hex( unpack("H*", $rom_offset) );
 
 	print STDERR "At address $rom_offset, ";
 	seek(DAT, $rom_offset, "SEEK_SET") or die "Failed seek";
 
 	read(PAT, my $data_size, 2) or die "Read error";
-	my $length = ord(substr($data_size,0,1))*256 + ord(substr($data_size,1,1));
+	my $length = hex( unpack("H*", $data_size) );
 
 	if ($length) {
 		print STDERR "Writing $length bytes, ";
@@ -56,7 +53,7 @@ while(1) {
 	}
 	else { # RLE mode
 		read(PAT, my $rle_size, 2) or die "Read error";
-		$length = ord(substr($rle_size,0,1))*256 + ord(substr($rle_size,1,1));
+		$length = hex( unpack("H*", $rle_size) );
 
 		print STDERR "Writing $length bytes of RLE, ";
 		read(PAT, my $byte, 1) or die "Read error";
