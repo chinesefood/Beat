@@ -18,11 +18,24 @@ GetOptions(
 	"verbose"   => \$verbose,
 );
 
-unless (@ARGV == 2) {
+unless (@ARGV) {
 	print "Usage: ips.pl FILE IPS_PATCH\n";
 	print "Patches FILE using an IPS patch.\n";
 
 	print "Copyright 2003, 2009 chinesefood (eat.more.chinese.food\@gmail.com)\n";
+	print "This program is free software; you can redistribute it and/or modify it under\n".
+		  "the terms of the GNU General Public License as published by the Free Software\n".
+		  "Foundation; either version 2 of the License, or (at your option) any later\n".
+		  "version.\n";
+
+	print "This program is distributed in the hope that it will be useful, but WITHOUT\n".
+		  "ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n".
+		  "FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n";
+
+	print "You should have received a copy of the GNU General Public License along with\n".
+		  "this program; if not, write to the Free Software Foundation, Inc., 51 Franklin\n".
+		  "Street, Fifth Floor, Boston, MA  02110-1301, USA.\n";
+
 	exit;
 }
 
@@ -40,6 +53,7 @@ DETECT_PATCH: for (my $i = 0; $i < @ARGV; $i++) {
 }
 die("Failed to detect an IPS patch.\n") unless $patch;
 
+die("No ROM specified.\n") unless (@ARGV);
 my $rom = $ARGV[0];
 open(ROM, "+<$rom") or die "open() failed opening $rom\n";
 binmode(ROM);
