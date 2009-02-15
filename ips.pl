@@ -30,7 +30,7 @@ while(1) {
 	read(PAT, my $rom_offset, 3) or die "Read error";
 
 	if ($rom_offset eq "EOF") {
-		print STDERR "Done!n";
+		print STDERR "Done!\n";
 		exit;
 	}
 
