@@ -7,18 +7,30 @@
 # the terms of the GNU General Public License.
 
 use strict;
+use Getopt::Long;
+use Fcntl qw/SEEK_SET/;
+
+my $verbose = 0;
+
+GetOptions(
+    "verbose"   => \$verbose,
+);
 
 unless (@ARGV == 2) {
-	print "Usage: ips.pl FILE PATCH\n";
-    print "Patches a file using an IPS patch.\n";
+	print "Usage: ips.pl FILE IPS_PATCH\n";
+    print "Patches FILE using an IPS patch.\n";
 
+    print "Changes 2009 chinesefood (eat.more.chinese.food\@gmail.com)\n";
 	exit;
 }
 
-open(PATCH, "$ARGV[1]") or die "Can't open $ARGV[1]";
-open(ROM, "+<$ARGV[0]") or die "Can't open $ARGV[0]";
+my ($rom, $patch) = @ARGV;
+
+open(PATCH, $patch) or die "Can't open $patch";
+open(ROM, "+<$rom") or die "Can't open $rom";
 
 read(PATCH, my $header, 5);
+
 die "Bad magic bytes in $ARGV[1]" if $header ne "PATCH";
 
 PATCH_LOOP: for (;;) {
@@ -29,14 +41,14 @@ PATCH_LOOP: for (;;) {
 	# No 24-bit number template in pack.  This works okay for now.
 	$rom_offset = hex( unpack("H*", $rom_offset) );
 
-	print STDERR "At address $rom_offset, ";
-	seek(ROM, $rom_offset, "SEEK_SET") or die "Failed seek";
+	print "At address $rom_offset, " if $verbose;
+	seek(ROM, $rom_offset, SEEK_SET) or die "Failed seek";
 
 	read(PATCH, my $data_size, 2) or die "Read error";
 	my $length = hex( unpack("H*", $data_size) );
 
 	if ($length) {
-		print STDERR "Writing $length bytes, ";
+		print "writing $length bytes of data.\n" if $verbose;
 		read(PATCH, my $data, $length) == $length or die "Read error";
 		print ROM $data;
 	}
@@ -44,16 +56,14 @@ PATCH_LOOP: for (;;) {
 		read(PATCH, my $rle_size, 2) or die "Read error";
 		$length = hex( unpack("H*", $rle_size) );
 
-		print STDERR "Writing $length bytes of RLE, ";
+		print "writing $length bytes of RLE data.\n" if $verbose;
 		read(PATCH, my $byte, 1) or die "Read error";
 		print ROM ($byte)x$length;
 	}
-
-	print STDERR "done\n";
 }
 
 close(PATCH);
 close(ROM);
 
-print STDERR "Done!\n";
+print "Patched $rom with $patch.\n";
 exit;
