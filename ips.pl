@@ -49,7 +49,7 @@ PATCH_LOOP: for (;;) {
 	# No 24-bit number template in pack.  This works okay for now.
 	$rom_offset = hex( unpack("H*", $rom_offset) );
 
-	print "At address $rom_offset, " if $verbose;
+	print "At offset $rom_offset, " if $verbose;
 	seek(ROM, $rom_offset, SEEK_SET) or die("seek() failed to seek to $rom_offset.\n");
 
 	read(PATCH, my $data_size, 2) or die("read() failed reading data size.\n");
