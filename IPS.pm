@@ -3,6 +3,7 @@ package IPS;
 use strict;
 use warnings;
 
+use constant IPS_MAGIC_BYTES	=> 'PATCH';
 use constant IPS_HEADER_LENGTH	=> 5;
 use constant IPS_OFFSET_SIZE	=> 3;
 use constant IPS_DATA_SIZE		=> 2;
@@ -212,7 +213,7 @@ sub check_header {
 		croak("read(): Error reading IPS patch header");
 	}
 
-	return unless $header eq 'PATCH';
+	return unless $header eq IPS_MAGIC_BYTES;
 	return 1;
 }
 
@@ -243,7 +244,7 @@ sub write_ips_file {
 	open(FH_IPS, ">$ips_filename") or croak("open():  Could not create IPS patch $ips_filename");
 	binmode(FH_IPS);
 
-	print FH_IPS 'PATCH';
+	print FH_IPS IPS_MAGIC_BYTES;
 
 	foreach my $record ( $self->get_all_records() ) {
 
