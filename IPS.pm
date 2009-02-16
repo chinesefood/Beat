@@ -235,6 +235,36 @@ sub patch_file {
 	close($fh_rom);
 }
 
+sub write_ips_file {
+	my ($self, $ips_filename) = @_;
+
+	$ips_filename = $self->get_patch_file() unless $ips_filename;
+
+	open(FH_IPS, ">$ips_filename") or croak("open():  Could not create IPS patch $ips_filename");
+	binmode(FH_IPS);
+
+	print FH_IPS 'PATCH';
+
+	foreach my $record ( $self->get_all_records() ) {
+
+		# Pretty tough to pack 24 bit unsigned integers.
+		print FH_IPS pack("H*", sprintf("%06X", $record->get_rom_offset() ) );
+
+		print FH_IPS pack("H*", sprintf("%04X", $record->get_data_size() ) );
+
+		if ( $record->is_rle() ) {
+			print FH_IPS pack("H*", sprintf("%04X", $record->get_rle_length() ) );
+		}
+
+		print FH_IPS $record->get_data();
+	}
+
+	print FH_IPS 'EOF';
+	close(FH_IPS);
+
+	return 1;
+}
+
 sub is_rle {
 	my ($self) = @_;
 
