@@ -1,6 +1,11 @@
 package IPS::Record;
 
 use strict;
+use warnings;
+
+use Fcntl qw(SEEK_SET);
+
+our $VERSION = 0.01;
 
 BEGIN {
 	no strict 'refs';
@@ -100,4 +105,16 @@ sub num {
 	return $self->{'num'};
 }
 
+sub write {
+	my ($self, $fh_rom) = @_;
+
+	seek($fh_rom, $self->get_rom_offset(), SEEK_SET);
+
+	print $fh_rom $self->get_data() unless $self->is_rle();
+
+	if ( $self->is_rle() ) {
+		my $rle_data = $self->get_data();
+		print $fh_rom "$rle_data" x $self->get_rle_length();
+	}
+}
 1;

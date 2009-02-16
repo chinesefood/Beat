@@ -10,10 +10,12 @@ use constant IPS_DATA_SIZE		=> 2;
 use constant IPS_RLE_LENGTH		=> 2;
 use constant IPS_RLE_DATA_SIZE	=> 1;
 
-use Fcntl qw(SEEK_CUR SEEK_SET);
+use Fcntl qw(SEEK_CUR);
 use Carp;
 
 use IPS::Record;
+
+our $VERSION = 0.01;
 
 BEGIN {
 	no strict 'refs';
@@ -90,7 +92,9 @@ sub init {
 
 	my $fh_patch = $self->_open_file( $self->get_patch_file() );
 
-	$self->_check_header($fh_patch);
+	unless( $self->check_header($fh_patch) ) {
+		croak("Header mismatch; " . $self->get_patch_file() . " not an IPS patch");
+	}
 
 	READ_RECORDS: for (my $i = 0; ; $i++) {
 		my $rom_offset = $self->_read_rom_offset($fh_patch);
@@ -134,19 +138,6 @@ sub init {
 		binmode(FH);
 
 		return *FH;
-	}
-
-	sub _check_header {
-		my ($self, $fh) = @_;
-
-		my $header;
-		unless( read($fh, $header, IPS_HEADER_LENGTH) == IPS_HEADER_LENGTH ) {
-			croak("read(): Error reading IPS patch header");
-		}
-
-		unless ( $header eq 'PATCH' ) {
-			croak("Header mismatch; " . $self->get_patch_file() . " not an IPS patch");
-		}
 	}
 
 	sub _read_rom_offset {
@@ -213,6 +204,18 @@ sub init {
 	}
 }
 
+sub check_header {
+	my ($self, $fh) = @_;
+
+	my $header;
+	unless( read($fh, $header, IPS_HEADER_LENGTH) == IPS_HEADER_LENGTH ) {
+		croak("read(): Error reading IPS patch header");
+	}
+
+	return unless $header eq 'PATCH';
+	return 1;
+}
+
 sub patch_file {
 	my ($self, $rom_file, $patch_file) = @_;
 
@@ -225,14 +228,7 @@ sub patch_file {
 	}
 	else {
 		WRITE_RECORDS: foreach my $record ( $self->get_all_records() ) {
-			seek($fh_rom, $record->get_rom_offset(), SEEK_SET);
-
-			print $fh_rom $record->get_data() unless $record->is_rle();
-
-			if ( $record->is_rle() ) {
-				my $rle_data = $record->get_data();
-				print $fh_rom "$rle_data" x $record->get_rle_length();
-			}
+			$record->write($fh_rom);
 		}
 	}
 

@@ -1,26 +1,76 @@
 #!/usr/bin/perl -w
 
-# ips.pl
-# version 0.03
-
-# Copyright 2009 chinesefood.
-
-# This is a quick hack to apply IPS patches. It is distributed under
-# the terms of the GNU General Public License.
-
 use strict;
 use Getopt::Long;
-use Fcntl qw/SEEK_SET/;
+
+use IPS;
+
+our $VERSION = "0.03cn";
 
 my $verbose = 0;
-
 GetOptions(
 	"verbose"   => \$verbose,
 );
 
-unless (@ARGV) {
-	print "Usage: ips.pl FILE IPS_PATCH\n";
-	print "Patches FILE using an IPS patch.\n";
+my $ips = IPS->new();
+my $ips_file = detect_ips_patch() || print_usage_statement();
+$ips = IPS->new( 'patch_file' => $ips_file );
+
+foreach my $file (@ARGV) {
+	print "Patching $file...\n";
+
+	if ($verbose) {
+		unless ( open(FH_ROM, "+<$file") ) {
+			die("Could not open $file for reading/writing.\n");
+		}
+
+		foreach my $record ( $ips->get_all_records() ) {
+			if ( $record->is_rle() ){
+				print "Writing ", $record->get_rle_length(), " RLE bytes to offset ", $record->get_rom_offset(), "\n";
+			}
+			else {
+				print "Writing ", $record->get_data_size(), " bytes to offset ", $record->get_rom_offset(), "\n";
+			}
+
+			$record->write(*FH_ROM);
+		}
+	}
+	else {
+		$ips->patch_file($file);
+	}
+
+	close(FH_ROM);
+}
+
+exit;
+
+
+
+
+sub detect_ips_patch {
+	for (my $i = 0; $i < @ARGV; $i++) {
+		my $file = $ARGV[$i];
+		unless ( open(FH, $file) ) {
+			die("open(): Cannot open $file for reading.\n");
+		}
+
+		if ( $ips->check_header(*FH) ) {
+			splice(@ARGV, $i, 1);
+			close(FH);
+
+			return $file;
+		}
+
+		close(FH);
+	}
+
+	return;
+}
+
+sub print_usage_statement {
+	print "ips.pl v$VERSION\n\n";
+	print "Usage: ips.pl [--verbose] IPS_PATCH FILE1 FILE2 ...\n";
+	print "Patches FILE using an IPS patch.\n\n";
 
 	print "Copyright 2003, 2009 chinesefood (eat.more.chinese.food\@gmail.com)\n";
 	print "This program is free software; you can redistribute it and/or modify it under\n".
@@ -39,63 +89,6 @@ unless (@ARGV) {
 	exit;
 }
 
-my $patch;
-DETECT_PATCH: for (my $i = 0; $i < @ARGV; $i++) {
-	open(PATCH, $ARGV[$i]) or die "open() failed opening $ARGV[$i] for reading.\n";
-	binmode(PATCH);
-
-	read(PATCH, my $header, 5);
-	$patch = splice(@ARGV, $i, 1) if $header eq 'PATCH';
-
-	last DETECT_PATCH if $patch;
-
-	close(PATCH);
-}
-die("Failed to detect an IPS patch.\n") unless $patch;
-
-die("No ROM specified.\n") unless (@ARGV);
-my $rom = $ARGV[0];
-open(ROM, "+<$rom") or die "open() failed opening $rom\n";
-binmode(ROM);
-
-PATCH_LOOP: for (;;) {
-	my $rom_offset;
-	read(PATCH, $rom_offset, 3) or die("read() failed to read $rom_offset.\n");
-
-	last PATCH_LOOP if $rom_offset eq 'EOF';
-
-	# No 24-bit number template in pack.  This works okay for now.
-	$rom_offset = hex( unpack("H*", $rom_offset) );
-
-	print "At offset $rom_offset, " if $verbose;
-	seek(ROM, $rom_offset, SEEK_SET) or die("seek() failed to seek to $rom_offset.\n");
-
-	read(PATCH, my $data_size, 2) or die("read() failed reading data size.\n");
-	my $length = hex( unpack("H*", $data_size) );
-
-	if ($length) {
-		print "writing $length bytes of data.\n" if $verbose;
-		read(PATCH, my $data, $length) == $length
-			or die("read() failed with $length bytes read.\n");
-		print ROM $data;
-	}
-	else { # RLE mode
-		read(PATCH, my $rle_size, 2) or die("read() failed reading RLE size.\n");
-		$length = hex( unpack("H*", $rle_size) );
-
-		print "writing $length bytes of RLE data.\n" if $verbose;
-		read(PATCH, my $byte, 1) == 1 or die "read() failed reading RLE data.\n";
-		print ROM "$byte" x $length;
-	}
-}
-
-print "Patched $rom with IPS file $patch.\n";
-
-close(PATCH);
-close(ROM);
-
-exit;
-
 __END__
 
 =head1 NAME
@@ -104,7 +97,7 @@ ips.pl - Patches a file with records provided from an IPS patch.
 
 =head1 SYNOPSIS
 
-	ips.pl myfilepatch.ips my.file
+	ips.pl [--verbose] myfilepatch.ips my.file my.file2 my.file3
 
 =head1 DESCRIPTION
 
