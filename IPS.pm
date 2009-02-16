@@ -151,9 +151,7 @@ sub init {
 
 		return 'EOF' if $rom_offset eq 'EOF';
 
-		$rom_offset = hex( unpack("H*", $rom_offset) );
-
-		return $rom_offset;
+		return hex( unpack("H*", $rom_offset) );
 	}
 
 	sub _read_data_size {
@@ -163,9 +161,8 @@ sub init {
 		unless( read($fh, $data_size, IPS_DATA_SIZE) == IPS_DATA_SIZE ) {
 			croak("read(): Error reading ROM data size");
 		}
-		$data_size = hex( unpack("H*", $data_size) );
 
-		return $data_size;
+		return hex( unpack("H*", $data_size) );
 	}
 
 	sub _read_rle_length {
@@ -177,9 +174,7 @@ sub init {
 		unless( read($fh, $rle_length, IPS_RLE_LENGTH) == IPS_RLE_LENGTH ) {
 			croak("read(): Error reading RLE size");
 		}
-		$rle_length = hex( unpack("H*", $rle_length) );
-
-		return $rle_length;
+		return hex( unpack("H*", $rle_length) );
 	}
 
 	sub _read_rle_data {
@@ -236,7 +231,7 @@ sub patch_file {
 	close($fh_rom);
 }
 
-sub write_ips_file {
+sub write_ips_patch {
 	my ($self, $ips_filename) = @_;
 
 	$ips_filename = $self->get_patch_file() unless $ips_filename;
@@ -261,9 +256,8 @@ sub write_ips_file {
 	}
 
 	print FH_IPS 'EOF';
-	close(FH_IPS);
 
-	return 1;
+	return close(FH_IPS);
 }
 
 sub is_rle {
