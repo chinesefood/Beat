@@ -212,6 +212,7 @@ sub check_header {
 	return 1;
 }
 
+# Change this to accept a hash.
 sub patch_file {
 	my ($self, $rom_file, $patch_file) = @_;
 
@@ -228,7 +229,7 @@ sub patch_file {
 		}
 	}
 
-	close($fh_rom);
+	return close($fh_rom);
 }
 
 sub write_ips_patch {
@@ -279,3 +280,137 @@ sub not_rle {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+IPS - A Perl module that provides an interface for handling patches in the International Patching System format.
+
+=head1 SYNOPSIS
+
+	use IPS;
+
+	# Apply an IPS patch to a file.
+	my $ips = IPS->new('patch_file' => $ARGV[0]);
+	$ips->apply_ips_patch($ARGV[1]);
+
+=head1 DESCRIPTION
+
+The International Patching System (IPS) is a patch format that was originally developed for patching Amiga games.  It is now the main patch format for distributing fan translations of console games.
+
+=head2 File Format
+
+What was one patch format has speciated into many patch formats.  An IPS file can contain Run Length Encoding (RLE) to save space, but compression techology has improved past the point where this became useless.  Creating new RLE patches is strongly, really, mega discouraged.  Use UPS instead.
+
+	At a Glance
+	Offset	Value	Size	Purpose
+	0		PATCH	5		IPS patch header
+	6		Varies	Varies	Patch records (see below)
+	EOF - 3	EOF		3		Marks End Of File (EOF)
+
+	Standard Patch Record
+	Offset	Size	Purpose
+	0		3		ROM offset value
+	3		2		Size of new data
+	5		Varies	Data
+
+	RLE Patch Record
+	Offset	Size	Purpose
+	0		3		ROM offset value
+	3		2		This is zero to mark this is a RLE record.
+	5		2		Length of data to be patched.
+	7		1		Data byte
+
+=head2 Methods
+
+The interface is not finished.  Do expect changes.
+
+=over 4
+
+=item * $ips->new()
+
+Instantiates a new IPS object, initalizes it, and returns the reference to it.  A hash can be passed at instantiation to override defaults:
+
+	patch_name	=> $filename	# Specify an IPS patch.  Required for initialization.
+	is_rle		=> 'yes'		# Set to string literal 'yes' internally but can be anything to
+								# declare this patch is RLE
+	records		=> \@array		# A reference to an array of IPS::Records.
+
+=item * $ips->init()
+
+Open the patch file and build the records.
+
+=item * $ips->get_patch_file()
+
+Returns the path to the patch file.
+
+=item * $ips->set_patch_file( $ips_patch )
+
+Sets the patch file to $ips_patch.
+
+=item * $ips->get_record( @args )
+
+Returns IPS::Records by the array indices passed to it.  Returns a scalar if only one index is provided.  Returns a list if more than one index is passed.
+
+=item * $ips->set_record( %args )
+
+Sets the record at the index provided in the hash key to the record at the hash value.  One can also set one record at a time:
+
+	$ips->set_record( 0	=> $record );
+
+Retuns the value of the assignment.
+
+=item * $ips->get_all_records()
+
+Returns a list of all the records in the patch.
+
+=item * $ips->check_header($fh)
+
+Check the filehandle provided to see if it points to an IPS patch.  Only checks for PATCH in the first five bytes.  Returns true if they match.  Otherwise returns false.
+
+=item * $ips->write_ips_patch( $other_ips_filename )
+
+Writes an IPS patch to either $other_ips_filename or to whatever is returned by get_patch_file.  Returns the value of close.
+
+=item * $ips->apply_ips_patch($file, [$ips_patch])
+
+Applies the loaded IPS patch to $file.  If another IPS patch filename is passed then another IPS object is constructed and initialized.  apply_ips_patch is then called through that object.
+
+Returns the value of close on $file's filehandle.
+
+=item * $ips->is_rle()
+
+Returns true if the patch is RLE.  Returns undef if not.
+
+=item * $ips->set_rle()
+
+Flags the patch for RLE.  Please don't do this anymore.
+
+=item * $ips->not_rle()
+
+Flags the patch as a standard IPS patch.  This is the way to go.
+
+=back
+
+=head1 AUTHOR
+
+chinesefood (eat.more.chinese.food@gmail.com)
+
+=head1 COPYRIGHT
+
+Copyright 2003, 2009 chinesefood
+
+This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+
+The original author is unknown at the time of release.
+
+=head1 SEE ALSO
+
+IPS::Record
+
+=cut
