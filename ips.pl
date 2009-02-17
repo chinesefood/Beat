@@ -36,7 +36,7 @@ foreach my $file (@ARGV) {
 		}
 	}
 	else {
-		$ips->patch_file($file);
+		$ips->apply_ips_patch($file);
 	}
 
 	close(FH_ROM);

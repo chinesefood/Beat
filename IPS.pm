@@ -213,7 +213,7 @@ sub check_header {
 }
 
 # Change this to accept a hash.
-sub patch_file {
+sub apply_ips_patch {
 	my ($self, $rom_file, $patch_file) = @_;
 
 	my $fh_rom = $self->_open_file($rom_file);
@@ -221,7 +221,7 @@ sub patch_file {
 	if ( $patch_file ) {
 		my $ips = IPS->new( 'patch_file' => $patch_file );
 
-		$ips->patch_file($rom_file);
+		$ips->apply_ips_patch($rom_file);
 	}
 	else {
 		WRITE_RECORDS: foreach my $record ( $self->get_all_records() ) {
