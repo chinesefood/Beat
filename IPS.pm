@@ -100,11 +100,25 @@ sub init {
 		croak("Header mismatch; " . $self->get_patch_file() . " not an IPS patch");
 	}
 
+	$self->read_records($fh_patch);
+
+	if ( detect_lunar_ips($fh_patch) ) {
+		my $cut_offset = $self->_read_cut_offset($fh_patch);
+
+		$self->set_cut_offset( $cut_offset );
+	}
+
+	close($fh_patch);
+}
+
+sub read_records {
+	my ($self, $fh) = @_;
+
 	READ_RECORDS: for (my $i = 0; ; $i++) {
-		my $rom_offset = $self->_read_rom_offset($fh_patch);
+		my $rom_offset = $self->_read_rom_offset($fh);
 		last READ_RECORDS if $rom_offset eq 'EOF';
 
-		my $data_size = $self->_read_data_size($fh_patch);
+		my $data_size = $self->_read_data_size($fh);
 
 		my $record = IPS::Record->new(
 			'num'			=> $i,
@@ -114,28 +128,20 @@ sub init {
 		);
 
 		if ( $record->is_rle() ) {
-			my $rle_length = $self->_read_rle_length($fh_patch);
-			my $rle_data = $self->_read_rle_data($fh_patch);
+			my $rle_length = $self->_read_rle_length($fh);
+			my $rle_data = $self->_read_rle_data($fh);
 
 			$record->set_rle_length($rle_length);
 			$record->set_data($rle_data);
 		}
 		else {
-			my $data = $self->_read_data($data_size, $fh_patch);
+			my $data = $self->_read_data($data_size, $fh);
 
 			$record->set_data($data);
 		}
 
 		$self->set_record($i => $record);
 	}
-
-	if ( detect_lunar_ips($fh_patch) ) {
-		my $cut_offset = $self->_read_cut_offset($fh_patch);
-
-		$self->set_cut_offset( $cut_offset );
-	}
-
-	close($fh_patch);
 }
 
 {
