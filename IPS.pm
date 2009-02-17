@@ -3,15 +3,15 @@ package IPS;
 use strict;
 use warnings;
 
-use constant IPS_MAGIC_BYTES			=> 'PATCH';
-use constant IPS_HEADER_LENGTH			=> 5;
-use constant IPS_OFFSET_SIZE			=> 3;
+use constant IPS_HEADER					=> 'PATCH';
+use constant IPS_HEADER_SIZE			=> 5;
+use constant IPS_DATA_OFFSET_SIZE		=> 3;
 use constant IPS_DATA_SIZE				=> 2;
 
 use constant IPS_RLE_LENGTH				=> 2;
 use constant IPS_RLE_DATA_SIZE			=> 1;
 
-use constant LUNAR_IPS_CUT_OFFSET_SIZE	=> 3;
+use constant LUNAR_IPS_TRUNCATE_SIZE	=> 3;
 
 use Fcntl qw(SEEK_CUR SEEK_END);
 use Carp;
@@ -154,7 +154,7 @@ sub init {
 		my ($self, $fh) = @_;
 
 		my $rom_offset;
-		unless( read($fh, $rom_offset, IPS_OFFSET_SIZE) == IPS_OFFSET_SIZE ) {
+		unless( read($fh, $rom_offset, IPS_DATA_OFFSET_SIZE) == IPS_DATA_OFFSET_SIZE ) {
 			croak("read():  Error reading ROM offset");
 		}
 
@@ -214,7 +214,7 @@ sub init {
 		seek($fh, -3, SEEK_END);
 
 		my $cut_offset;
-		unless ( read($fh, $cut_offset, LUNAR_IPS_CUT_OFFSET_SIZE) == LUNAR_IPS_CUT_OFFSET_SIZE ) {
+		unless ( read($fh, $cut_offset, LUNAR_IPS_TRUNCATE_SIZE) == LUNAR_IPS_TRUNCATE_SIZE ) {
 			croak("read(): Error checking for Lunar IPS patch");
 		}
 
@@ -236,11 +236,11 @@ sub check_header {
 	my ($self, $fh) = @_;
 
 	my $header;
-	unless( read($fh, $header, IPS_HEADER_LENGTH) == IPS_HEADER_LENGTH ) {
+	unless( read($fh, $header, IPS_HEADER_SIZE) == IPS_HEADER_SIZE ) {
 		croak("read(): Error reading IPS patch header");
 	}
 
-	return unless $header eq IPS_MAGIC_BYTES;
+	return unless $header eq IPS_HEADER;
 	return 1;
 }
 
@@ -250,7 +250,7 @@ sub detect_lunar_ips {
 	seek($fh, -3, SEEK_END);
 
 	my $cut_offset;
-	unless ( read($fh, $cut_offset, LUNAR_IPS_CUT_OFFSET_SIZE) == LUNAR_IPS_CUT_OFFSET_SIZE ) {
+	unless ( read($fh, $cut_offset, LUNAR_IPS_TRUNCATE_SIZE) == LUNAR_IPS_TRUNCATE_SIZE ) {
 		return;
 	}
 
@@ -286,7 +286,7 @@ sub write_ips_patch {
 	open(FH_IPS, ">$ips_filename") or croak("open():  Could not create IPS patch $ips_filename");
 	binmode(FH_IPS);
 
-	print FH_IPS IPS_MAGIC_BYTES;
+	print FH_IPS IPS_HEADER;
 
 	foreach my $record ( $self->get_all_records() ) {
 
