@@ -397,6 +397,10 @@ Flags the patch as a standard IPS patch.  This is the way to go.
 
 chinesefood (eat.more.chinese.food@gmail.com)
 
+=head1 HOMEPAGE
+
+L<http://github.com/chinesefood/ips.pl/tree/master>
+
 =head1 COPYRIGHT
 
 Copyright 2003, 2009 chinesefood
@@ -407,7 +411,7 @@ This program is distributed in the hope that it will be useful, but WITHOUT ANY 
 
 You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
 
-The original author is unknown at the time of release.
+This work is based on ips.pl v0.01.
 
 =head1 SEE ALSO
 

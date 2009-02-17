@@ -1,5 +1,11 @@
 Changelog
 
+v0.04
+* ips.pl now uses IPS and IPS::Record module for code reuse, granularity over patches, etc.
+* Can now patch multiple files with one patch.
+* More documentation.
+* IPS.pm can write new IPS patch files that are bit exact with the loaded patch.
+
 v0.03
 * Script will exit if it can't find a ROM.
 * Should now work on Windows (not tested).
