@@ -3,15 +3,17 @@ package IPS;
 use strict;
 use warnings;
 
-use constant IPS_MAGIC_BYTES	=> 'PATCH';
-use constant IPS_HEADER_LENGTH	=> 5;
-use constant IPS_OFFSET_SIZE	=> 3;
-use constant IPS_DATA_SIZE		=> 2;
+use constant IPS_MAGIC_BYTES			=> 'PATCH';
+use constant IPS_HEADER_LENGTH			=> 5;
+use constant IPS_OFFSET_SIZE			=> 3;
+use constant IPS_DATA_SIZE				=> 2;
 
-use constant IPS_RLE_LENGTH		=> 2;
-use constant IPS_RLE_DATA_SIZE	=> 1;
+use constant IPS_RLE_LENGTH				=> 2;
+use constant IPS_RLE_DATA_SIZE			=> 1;
 
-use Fcntl qw(SEEK_CUR);
+use constant LUNAR_IPS_CUT_OFFSET_SIZE	=> 3;
+
+use Fcntl qw(SEEK_CUR SEEK_END);
 use Carp;
 
 use IPS::Record;
@@ -21,7 +23,7 @@ our $VERSION = 0.01;
 BEGIN {
 	no strict 'refs';
 
-	foreach my $method qw(patch_file) {
+	foreach my $method qw(patch_file cut_offset) {
 		my ($get_method, $set_method) = ("get_$method", "set_$method");
 
 		*{__PACKAGE__."::$get_method"} = sub {
@@ -73,6 +75,7 @@ sub new {
 	my $self = {
 		'is_rle'		=> undef,
 		'patch_file'	=> undef,
+		'cut_offset'	=> undef,
 
 		'records'		=> [],
 	};
@@ -124,6 +127,12 @@ sub init {
 		}
 
 		$self->set_record($i => $record);
+	}
+
+	if ( detect_lunar_ips($fh_patch) ) {
+		my $cut_offset = $self->_read_cut_offset($fh_patch);
+
+		$self->set_cut_offset( $cut_offset );
 	}
 
 	close($fh_patch);
@@ -198,6 +207,29 @@ sub init {
 
 		return $data;
 	}
+
+	sub _read_cut_offset {
+		my ($self, $fh) = @_;
+
+		seek($fh, -3, SEEK_END);
+
+		my $cut_offset;
+		unless ( read($fh, $cut_offset, LUNAR_IPS_CUT_OFFSET_SIZE) == LUNAR_IPS_CUT_OFFSET_SIZE ) {
+			croak("read(): Error checking for Lunar IPS patch");
+		}
+
+		return if $cut_offset eq 'EOF';
+
+		return hex( unpack("H*", $cut_offset) );
+	}
+}
+
+sub truncate_file {
+	my ($self, $fh) = @_;
+
+	seek($fh, 0, SEEK_END);
+
+	return truncate( $fh, $self->get_cut_offset() );
 }
 
 sub check_header {
@@ -209,6 +241,19 @@ sub check_header {
 	}
 
 	return unless $header eq IPS_MAGIC_BYTES;
+	return 1;
+}
+
+sub detect_lunar_ips {
+	my ($fh) = @_;
+
+	seek($fh, -3, SEEK_END);
+
+	my $cut_offset;
+	unless ( read($fh, $cut_offset, LUNAR_IPS_CUT_OFFSET_SIZE) == LUNAR_IPS_CUT_OFFSET_SIZE ) {
+		return;
+	}
+
 	return 1;
 }
 
@@ -229,6 +274,7 @@ sub apply_ips_patch {
 		}
 	}
 
+	$self->truncate_file($fh_rom) if $self->get_cut_offset();
 	return close($fh_rom);
 }
 
