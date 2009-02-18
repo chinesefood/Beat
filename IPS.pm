@@ -160,14 +160,14 @@ sub read_truncation_point {
 
 	seek($fh, -3, SEEK_END);
 
-	my $cut_offset;
-	unless ( read($fh, $cut_offset, LUNAR_IPS_TRUNCATE_SIZE) == LUNAR_IPS_TRUNCATE_SIZE ) {
+	my $truncation_point;
+	unless ( read($fh, $truncation_point, LUNAR_IPS_TRUNCATE_SIZE) == LUNAR_IPS_TRUNCATE_SIZE ) {
 		croak("read(): Error checking for Lunar IPS patch");
 	}
 
-	return if $cut_offset eq 'EOF';
+	return if $truncation_point eq 'EOF';
 
-	return hex( unpack("H*", $cut_offset) );
+	return hex( unpack("H*", $truncation_point) );
 }
 
 sub truncate_file {
@@ -199,8 +199,8 @@ sub is_lunar_ips {
 
 	seek($fh, -3, SEEK_END);
 
-	my $cut_offset;
-	unless ( read($fh, $cut_offset, LUNAR_IPS_TRUNCATE_SIZE) == LUNAR_IPS_TRUNCATE_SIZE ) {
+	my $truncation_point;
+	unless ( read($fh, $truncation_point, LUNAR_IPS_TRUNCATE_SIZE) == LUNAR_IPS_TRUNCATE_SIZE ) {
 		return;
 	}
 
