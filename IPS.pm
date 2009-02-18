@@ -23,7 +23,7 @@ our $VERSION = 0.01;
 BEGIN {
 	no strict 'refs';
 
-	foreach my $method qw(patch_file cut_offset) {
+	foreach my $method qw(patch_file cut_offset patch_filehandle) {
 		my ($get_method, $set_method) = ("get_$method", "set_$method");
 
 		*{__PACKAGE__."::$get_method"} = sub {
@@ -73,11 +73,12 @@ sub new {
 	my ($class, %args) = @_;
 
 	my $self = {
-		'is_rle'		=> undef,
-		'patch_file'	=> undef,
-		'cut_offset'	=> undef,
+		'is_rle'			=> undef,
+		'patch_file'		=> undef,
+		'patch_filehandle'	=> undef,
+		'cut_offset'		=> undef,
 
-		'records'		=> [],
+		'records'			=> [],
 	};
 
 	foreach my $key ( keys(%args) ) {
@@ -95,33 +96,32 @@ sub init {
 	my ($self) = @_;
 
 	my $fh_patch = $self->_open_file( $self->get_patch_file() );
+	$self->set_patch_filehandle( $fh_patch );
 
-	unless( $self->check_header($fh_patch) ) {
+	unless( $self->check_header() ) {
 		croak("Header mismatch; " . $self->get_patch_file() . " not an IPS patch");
 	}
 
 	$self->read_records($fh_patch);
 
-	if ( detect_lunar_ips($fh_patch) ) {
-		my $cut_offset = $self->_read_cut_offset($fh_patch);
+	if ( $self->detect_lunar_ips() ) {
+		my $cut_offset = $self->read_cut_offset();
 
 		$self->set_cut_offset( $cut_offset );
 	}
-
-	close($fh_patch);
 }
 
 sub read_records {
 	my ($self, $fh) = @_;
 
 	my $fh_position = 5;
-	READ_RECORDS: for (my $i = 0; ; $i++) {
-		seek($fh, $fh_position, SEEK_SET);
+	seek($fh, $fh_position, SEEK_SET);
 
-		my $rom_offset = $self->_read_rom_offset($fh);
+	READ_RECORDS: for (my $i = 0; ; $i++) {
+		my $rom_offset = $self->read_rom_offset();
 		last READ_RECORDS if $rom_offset eq 'EOF';
 
-		my $data_size = $self->_read_data_size($fh);
+		my $data_size = $self->read_data_size();
 
 		my $record = IPS::Record->new(
 			'num'			=> $i,
@@ -132,14 +132,14 @@ sub read_records {
 		);
 
 		if ( $record->is_rle() ) {
-			my $rle_length = $self->_read_rle_length($fh);
-			my $rle_data = $self->_read_rle_data($fh);
+			my $rle_length = $self->read_rle_length();
+			my $rle_data = $self->read_rle_data();
 
 			$record->set_rle_length($rle_length);
 			$record->set_data($rle_data);
 		}
 		else {
-			my $data = $self->_read_data($data_size, $fh);
+			my $data = $self->read_data($data_size);
 
 			$record->set_data($data);
 		}
@@ -168,83 +168,90 @@ sub read_records {
 
 		return *FH;
 	}
+}
 
-	sub _read_rom_offset {
-		my ($self, $fh) = @_;
+sub read_data {
+	my ($self, $data_size, $fh) = @_;
+	$fh = $self->get_patch_filehandle() unless $fh;
 
-		my $rom_offset;
-		unless( read($fh, $rom_offset, IPS_DATA_OFFSET_SIZE) == IPS_DATA_OFFSET_SIZE ) {
-			croak("read():  Error reading ROM offset");
-		}
-
-		return 'EOF' if $rom_offset eq 'EOF';
-
-		return hex( unpack("H*", $rom_offset) );
+	my $data;
+	unless ( read($fh, $data, $data_size) == $data_size ) {
+		croak("read(): Error reading data to be copied in the file to be patched");
 	}
 
-	sub _read_data_size {
-		my ($self, $fh) = @_;
+	return $data;
+}
 
-		my $data_size;
-		unless( read($fh, $data_size, IPS_DATA_SIZE) == IPS_DATA_SIZE ) {
-			croak("read(): Error reading ROM data size");
-		}
+sub read_rle_data {
+	my ($self, $fh) = @_;
+	$fh = $self->get_patch_filehandle() unless $fh;
 
-		return hex( unpack("H*", $data_size) );
+	my $rle_data;
+	unless( read($fh, $rle_data, IPS_RLE_DATA_SIZE) == IPS_RLE_DATA_SIZE ) {
+		croak("read(): Error reading RLE data");
 	}
 
-	sub _read_rle_length {
-		my ($self, $fh) = @_;
+	return $rle_data;
+}
 
-		$self->set_rle() unless $self->is_rle();
+sub read_rle_length {
+	my ($self, $fh) = @_;
+	$fh = $self->get_patch_filehandle() unless $fh;
 
-		my $rle_length;
-		unless( read($fh, $rle_length, IPS_RLE_LENGTH) == IPS_RLE_LENGTH ) {
-			croak("read(): Error reading RLE size");
-		}
-		return hex( unpack("H*", $rle_length) );
+	$self->set_rle() unless $self->is_rle();
+
+	my $rle_length;
+	unless( read($fh, $rle_length, IPS_RLE_LENGTH) == IPS_RLE_LENGTH ) {
+		croak("read(): Error reading RLE size");
+	}
+	return hex( unpack("H*", $rle_length) );
+}
+
+sub read_data_size {
+	my ($self, $fh) = @_;
+	$fh = $self->get_patch_filehandle() unless $fh;
+
+	my $data_size;
+	unless( read($fh, $data_size, IPS_DATA_SIZE) == IPS_DATA_SIZE ) {
+		croak("read(): Error reading ROM data size");
 	}
 
-	sub _read_rle_data {
-		my ($self, $fh) = @_;
+	return hex( unpack("H*", $data_size) );
+}
 
-		my $rle_data;
-		unless( read($fh, $rle_data, IPS_RLE_DATA_SIZE) == IPS_RLE_DATA_SIZE ) {
-			croak("read(): Error reading RLE data");
-		}
+sub read_rom_offset {
+	my ($self, $fh) = @_;
+	$fh = $self->get_patch_filehandle() unless $fh;
 
-		return $rle_data;
+	my $rom_offset;
+	unless( read($fh, $rom_offset, IPS_DATA_OFFSET_SIZE) == IPS_DATA_OFFSET_SIZE ) {
+		croak("read():  Error reading ROM offset");
 	}
 
-	sub _read_data {
-		my ($self, $data_size, $fh) = @_;
+	return 'EOF' if $rom_offset eq 'EOF';
 
-		my $data;
-		unless ( read($fh, $data, $data_size) == $data_size ) {
-			croak("read(): Error reading data to be copied in the file to be patched");
-		}
+	return hex( unpack("H*", $rom_offset) );
+}
 
-		return $data;
+sub read_cut_offset {
+	my ($self, $fh) = @_;
+	$fh = $self->get_patch_filehandle() unless $fh;
+
+	seek($fh, -3, SEEK_END);
+
+	my $cut_offset;
+	unless ( read($fh, $cut_offset, LUNAR_IPS_TRUNCATE_SIZE) == LUNAR_IPS_TRUNCATE_SIZE ) {
+		croak("read(): Error checking for Lunar IPS patch");
 	}
 
-	sub _read_cut_offset {
-		my ($self, $fh) = @_;
+	return if $cut_offset eq 'EOF';
 
-		seek($fh, -3, SEEK_END);
-
-		my $cut_offset;
-		unless ( read($fh, $cut_offset, LUNAR_IPS_TRUNCATE_SIZE) == LUNAR_IPS_TRUNCATE_SIZE ) {
-			croak("read(): Error checking for Lunar IPS patch");
-		}
-
-		return if $cut_offset eq 'EOF';
-
-		return hex( unpack("H*", $cut_offset) );
-	}
+	return hex( unpack("H*", $cut_offset) );
 }
 
 sub truncate_file {
 	my ($self, $fh) = @_;
+	$fh = $self->get_patch_filehandle() unless $fh;
 
 	seek($fh, 0, SEEK_END);
 
@@ -253,7 +260,9 @@ sub truncate_file {
 
 sub check_header {
 	my ($self, $fh) = @_;
+	$fh = $self->get_patch_filehandle() unless $fh;
 
+	seek($fh, 0, SEEK_SET);
 	my $header;
 	unless( read($fh, $header, IPS_HEADER_SIZE) == IPS_HEADER_SIZE ) {
 		croak("read(): Error reading IPS patch header");
@@ -264,7 +273,8 @@ sub check_header {
 }
 
 sub detect_lunar_ips {
-	my ($fh) = @_;
+	my ($self, $fh) = @_;
+	$fh = $self->get_patch_filehandle() unless $fh;
 
 	seek($fh, -3, SEEK_END);
 
