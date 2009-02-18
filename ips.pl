@@ -32,7 +32,7 @@ foreach my $file (@ARGV) {
 				print "Writing ", $record->get_data_size(), " bytes to offset ", $record->get_rom_offset(), "\n";
 			}
 
-			$record->write(*FH_ROM);
+			$record->write_to_file(*FH_ROM);
 		}
 
 		if ( $ips->get_truncation_point() ) {

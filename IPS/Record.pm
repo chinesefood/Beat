@@ -113,7 +113,7 @@ sub num {
 	return $self->{'num'};
 }
 
-sub write {
+sub write_to_file {
 	my ($self, $fh_rom) = @_;
 
 	seek($fh_rom, $self->get_rom_offset(), SEEK_SET);
@@ -124,6 +124,8 @@ sub write {
 		my $rle_data = $self->get_data();
 		print $fh_rom "$rle_data" x $self->get_rle_length();
 	}
+
+	return 1;
 }
 
 sub read_rom_offset {
