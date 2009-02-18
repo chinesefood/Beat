@@ -124,30 +124,11 @@ sub read_records {
 			'ips_patch'		=> $self,
 		);
 
-		my $rom_offset = $record->read_rom_offset();
-		last READ_RECORDS if $rom_offset eq 'EOF';
+		last READ_RECORDS if $record->read_rom_offset eq 'EOF';
 
-		$record->set_rom_offset($rom_offset);
-
-		my $data_size = $record->read_data_size();
-		$record->set_data_size($data_size);
-
-
-		if ( $record->is_rle() ) {
-			my $rle_length = $record->read_rle_length();
-			my $rle_data = $record->read_rle_data();
-
-			$record->set_rle_length($rle_length);
-			$record->set_data($rle_data);
-		}
-		else {
-			my $data = $record->read_data($data_size);
-
-			$record->set_data($data);
-		}
+		$record->memorize_data();
 
 		$self->set_record($i => $record);
-		$record->memorize_data();
 
 		$fh_position += IPS_DATA_OFFSET_SIZE + IPS_DATA_SIZE;
 
