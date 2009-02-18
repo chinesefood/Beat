@@ -104,7 +104,7 @@ sub init {
 
 	$self->read_records($fh_patch);
 
-	if ( $self->detect_lunar_ips() ) {
+	if ( $self->is_lunar_ips() ) {
 		my $cut_offset = $self->read_cut_offset();
 
 		$self->set_cut_offset( $cut_offset );
@@ -272,7 +272,7 @@ sub check_header {
 	return 1;
 }
 
-sub detect_lunar_ips {
+sub is_lunar_ips {
 	my ($self, $fh) = @_;
 	$fh = $self->get_patch_filehandle() unless $fh;
 
