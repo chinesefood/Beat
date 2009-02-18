@@ -13,7 +13,7 @@ use constant IPS_RLE_DATA_SIZE			=> 1;
 
 use constant LUNAR_IPS_TRUNCATE_SIZE	=> 3;
 
-use Fcntl qw(SEEK_CUR SEEK_END);
+use Fcntl qw(SEEK_SET SEEK_CUR SEEK_END);
 use Carp;
 
 use IPS::Record;
@@ -114,7 +114,10 @@ sub init {
 sub read_records {
 	my ($self, $fh) = @_;
 
+	my $fh_position = 5;
 	READ_RECORDS: for (my $i = 0; ; $i++) {
+		seek($fh, $fh_position, SEEK_SET);
+
 		my $rom_offset = $self->_read_rom_offset($fh);
 		last READ_RECORDS if $rom_offset eq 'EOF';
 
@@ -123,6 +126,7 @@ sub read_records {
 		my $record = IPS::Record->new(
 			'num'			=> $i,
 			'rom_offset'	=> $rom_offset,
+			'record_offset'	=> $fh_position,
 			'ips_patch'		=> $self,
 			'data_size'		=> $data_size,
 		);
@@ -141,6 +145,15 @@ sub read_records {
 		}
 
 		$self->set_record($i => $record);
+
+		$fh_position += IPS_DATA_OFFSET_SIZE + IPS_DATA_SIZE;
+
+		if ( $record->is_rle() ) {
+			$fh_position += IPS_RLE_LENGTH + IPS_RLE_DATA_SIZE;
+		}
+		else {
+			$fh_position += $record->get_data_size();
+		}
 	}
 }
 

@@ -10,7 +10,7 @@ our $VERSION = 0.01;
 BEGIN {
 	no strict 'refs';
 
-	foreach my $method qw(data rom_offset data_size rle_length ips_patch) {
+	foreach my $method qw(data rom_offset data_size rle_length ips_patch record_offset) {
 		my ($get_method, $set_method) = ("get_$method", "set_$method");
 
 		*{__PACKAGE__."::$get_method"} = sub {
@@ -63,6 +63,7 @@ sub new {
 		'num'			=> undef,
 		'data'			=> undef,
 
+		'record_offset'	=> undef,
 		'rom_offset'	=> undef,
 		'data_size'		=> undef,
 
