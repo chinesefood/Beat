@@ -35,7 +35,7 @@ foreach my $file (@ARGV) {
 			$record->write(*FH_ROM);
 		}
 
-		if ( $ips->get_cut_offset() ) {
+		if ( $ips->get_truncation_point() ) {
 			print "Truncating file...\n";
 			$ips->truncate_file(*FH_ROM);
 		}

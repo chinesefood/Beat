@@ -23,7 +23,7 @@ our $VERSION = 0.01;
 BEGIN {
 	no strict 'refs';
 
-	foreach my $method qw(patch_file cut_offset patch_filehandle) {
+	foreach my $method qw(patch_file truncation_point patch_filehandle) {
 		my ($get_method, $set_method) = ("get_$method", "set_$method");
 
 		*{__PACKAGE__."::$get_method"} = sub {
@@ -105,9 +105,9 @@ sub init {
 	$self->read_records($fh_patch);
 
 	if ( $self->is_lunar_ips() ) {
-		my $cut_offset = $self->read_cut_offset();
+		my $truncation_point = $self->read_truncation_point();
 
-		$self->set_cut_offset( $cut_offset );
+		$self->set_truncation_point( $truncation_point );
 	}
 }
 
@@ -233,7 +233,7 @@ sub read_rom_offset {
 	return hex( unpack("H*", $rom_offset) );
 }
 
-sub read_cut_offset {
+sub read_truncation_point {
 	my ($self, $fh) = @_;
 	$fh = $self->get_patch_filehandle() unless $fh;
 
