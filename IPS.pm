@@ -118,33 +118,36 @@ sub read_records {
 	seek($fh, $fh_position, SEEK_SET);
 
 	READ_RECORDS: for (my $i = 0; ; $i++) {
-		my $rom_offset = $self->read_rom_offset();
-		last READ_RECORDS if $rom_offset eq 'EOF';
-
-		my $data_size = $self->read_data_size();
-
 		my $record = IPS::Record->new(
 			'num'			=> $i,
-			'rom_offset'	=> $rom_offset,
 			'record_offset'	=> $fh_position,
 			'ips_patch'		=> $self,
-			'data_size'		=> $data_size,
 		);
 
+		my $rom_offset = $record->read_rom_offset();
+		last READ_RECORDS if $rom_offset eq 'EOF';
+
+		$record->set_rom_offset($rom_offset);
+
+		my $data_size = $record->read_data_size();
+		$record->set_data_size($data_size);
+
+
 		if ( $record->is_rle() ) {
-			my $rle_length = $self->read_rle_length();
-			my $rle_data = $self->read_rle_data();
+			my $rle_length = $record->read_rle_length();
+			my $rle_data = $record->read_rle_data();
 
 			$record->set_rle_length($rle_length);
 			$record->set_data($rle_data);
 		}
 		else {
-			my $data = $self->read_data($data_size);
+			my $data = $record->read_data($data_size);
 
 			$record->set_data($data);
 		}
 
 		$self->set_record($i => $record);
+		$record->memorize_data();
 
 		$fh_position += IPS_DATA_OFFSET_SIZE + IPS_DATA_SIZE;
 
@@ -168,69 +171,6 @@ sub read_records {
 
 		return *FH;
 	}
-}
-
-sub read_data {
-	my ($self, $data_size, $fh) = @_;
-	$fh = $self->get_patch_filehandle() unless $fh;
-
-	my $data;
-	unless ( read($fh, $data, $data_size) == $data_size ) {
-		croak("read(): Error reading data to be copied in the file to be patched");
-	}
-
-	return $data;
-}
-
-sub read_rle_data {
-	my ($self, $fh) = @_;
-	$fh = $self->get_patch_filehandle() unless $fh;
-
-	my $rle_data;
-	unless( read($fh, $rle_data, IPS_RLE_DATA_SIZE) == IPS_RLE_DATA_SIZE ) {
-		croak("read(): Error reading RLE data");
-	}
-
-	return $rle_data;
-}
-
-sub read_rle_length {
-	my ($self, $fh) = @_;
-	$fh = $self->get_patch_filehandle() unless $fh;
-
-	$self->set_rle() unless $self->is_rle();
-
-	my $rle_length;
-	unless( read($fh, $rle_length, IPS_RLE_LENGTH) == IPS_RLE_LENGTH ) {
-		croak("read(): Error reading RLE size");
-	}
-	return hex( unpack("H*", $rle_length) );
-}
-
-sub read_data_size {
-	my ($self, $fh) = @_;
-	$fh = $self->get_patch_filehandle() unless $fh;
-
-	my $data_size;
-	unless( read($fh, $data_size, IPS_DATA_SIZE) == IPS_DATA_SIZE ) {
-		croak("read(): Error reading ROM data size");
-	}
-
-	return hex( unpack("H*", $data_size) );
-}
-
-sub read_rom_offset {
-	my ($self, $fh) = @_;
-	$fh = $self->get_patch_filehandle() unless $fh;
-
-	my $rom_offset;
-	unless( read($fh, $rom_offset, IPS_DATA_OFFSET_SIZE) == IPS_DATA_OFFSET_SIZE ) {
-		croak("read():  Error reading ROM offset");
-	}
-
-	return 'EOF' if $rom_offset eq 'EOF';
-
-	return hex( unpack("H*", $rom_offset) );
 }
 
 sub read_truncation_point {
@@ -303,7 +243,7 @@ sub apply_ips_patch {
 		}
 	}
 
-	$self->truncate_file($fh_rom) if $self->get_cut_offset();
+	$self->truncate_file($fh_rom) if $self->get_truncation_point();
 	return close($fh_rom);
 }
 
