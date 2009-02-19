@@ -220,7 +220,7 @@ sub apply_ips_patch {
 	}
 	else {
 		WRITE_RECORDS: foreach my $record ( $self->get_all_records() ) {
-			$record->write($fh_rom);
+			$record->write_to_file($fh_rom);
 		}
 	}
 
