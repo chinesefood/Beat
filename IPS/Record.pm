@@ -128,6 +128,23 @@ sub write_to_file {
 	return 1;
 }
 
+sub write_to_ips_patch {
+	my ($self, $fh) = @_;
+	$fh = $self->get_ips_patch()->get_patch_filehandle() unless $fh;
+
+	my $rom_offset = $self->get_rom_offset();
+	my $data_size = $self->get_data_size();
+	my $rle_length = $self->get_rle_length();
+	my $patch_data = $self->get_data();
+
+	if ( $self->is_rle() ) {
+		print $fh $rom_offset, $data_size, $rle_length, $patch_data;
+	}
+	else {
+		print $fh $rom_offset, $data_size, $patch_data;
+	}
+}
+
 sub read_rom_offset {
 	my ($self) = @_;
 
