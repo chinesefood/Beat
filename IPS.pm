@@ -253,6 +253,7 @@ sub write_ips_patch {
 	}
 
 	print FH_IPS 'EOF';
+	print FH_IPS pack("H*", sprintf("%06X", $self->get_truncation_point() ) ) if $self->get_truncation_point();
 
 	return close(FH_IPS);
 }
