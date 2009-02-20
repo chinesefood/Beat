@@ -275,6 +275,30 @@ sub not_rle {
 	return $self->{'is_rle'} = undef;
 }
 
+sub push_record {
+	my ($self, @records) = @_;
+
+	return push( @{$self->{'records'}}, @records);
+}
+
+sub pop_record {
+	my ($self) = @_;
+
+	return pop( @{$self->{'records'}} );
+}
+
+sub shift_record {
+	my ($self) = @_;
+
+	return shift( @{$self->{'records'}} );
+}
+
+sub unshift_record {
+	my ($self, @records) = @_;
+
+	return unshift( @{$self->{'records'}}, @records );
+}
+
 1;
 
 __END__
