@@ -12,64 +12,54 @@ GetOptions(
 	"verbose"   => \$verbose,
 );
 
+print_usage_statement() unless (@ARGV);
+
 my $ips = IPS->new();
-my $ips_file = detect_ips_patch() || print_usage_statement();
-$ips = IPS->new( 'patch_file' => $ips_file );
+my %patches = build_patch_hash();
+foreach my $rom ( keys(%patches) ) {
+	print "Patching $rom...\n";
 
-foreach my $file (@ARGV) {
-	print "Patching $file...\n";
+	foreach my $patch ( @{$patches{$rom}} ) {
+		print "\tApplying $patch\n";
 
-	if ($verbose) {
-		unless ( open(FH_ROM, "+<$file") ) {
-			die("Could not open $file for reading/writing.\n");
-		}
-
-		foreach my $record ( $ips->get_all_records() ) {
-			if ( $record->is_rle() ){
-				print "Writing ", $record->get_rle_length(), " RLE bytes to offset ", $record->get_rom_offset(), "\n";
-			}
-			else {
-				print "Writing ", $record->get_data_size(), " bytes to offset ", $record->get_rom_offset(), "\n";
-			}
-
-			$record->write_to_file(*FH_ROM);
-		}
-
-		if ( $ips->get_truncation_point() ) {
-			print "Truncating file...\n";
-			$ips->truncate_file(*FH_ROM);
-		}
+		$ips->apply_ips_patch($rom, $patch);
 	}
-	else {
-		$ips->apply_ips_patch($file);
-	}
-
-	close(FH_ROM);
 }
 
 exit;
 
+sub build_patch_hash {
+	my %patches;
 
-
-
-sub detect_ips_patch {
-	for (my $i = 0; $i < @ARGV; $i++) {
+	FIND_ROMS: for (my $i = 0; $i < @ARGV; $i++) {
 		my $file = $ARGV[$i];
-		unless ( open(FH, $file) ) {
-			die("open(): Cannot open $file for reading.\n");
+		open(ROM, $file) or die("Couldn't open $file.\n");
+
+		unless ( $ips->check_header(*ROM) ) {
+			my @patches;
+
+			PUSH_PATCHES: for (my $j = $i + 1; $j < @ARGV; $j++) {
+				my $possible_patch = $ARGV[$j];
+				open(PATCH, $possible_patch) or die("Couldn't open possible patch $possible_patch.\n");
+
+				my $result = $ips->check_header(*PATCH);
+
+				close(PATCH);
+
+				last PUSH_PATCHES unless $result;
+
+				push(@patches, $possible_patch);
+			}
+
+			$patches{$file} = \@patches;
 		}
-
-		if ( $ips->check_header(*FH) ) {
-			splice(@ARGV, $i, 1);
-			close(FH);
-
-			return $file;
+		else {
+			close(ROM);
+			next FIND_ROMS;
 		}
-
-		close(FH);
 	}
 
-	return;
+	return %patches;
 }
 
 sub print_usage_statement {
