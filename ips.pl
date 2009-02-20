@@ -7,14 +7,30 @@ use IPS;
 
 our $VERSION = "0.04";
 
-my $verbose = 0;
+my $verbose = undef;
+my $merge 	= undef;
 GetOptions(
 	"verbose"   => \$verbose,
+	"merge=s"	=> \$merge,
 );
 
 print_usage_statement() unless (@ARGV);
 
 my $ips = IPS->new();
+
+if ($merge) {
+	my $merged_ips = IPS->new();
+
+	foreach (@ARGV) {
+		my $ips = IPS->new('patch_file' => $_);
+
+		$merged_ips->push_record( $ips->get_all_records() );
+	}
+
+	$merged_ips->write_ips_patch($merge);
+	exit;
+}
+
 my %patches = build_patch_hash();
 foreach my $rom ( keys(%patches) ) {
 	print "Patching $rom...\n";
