@@ -5,7 +5,7 @@ use Getopt::Long;
 
 use IPS;
 
-our $VERSION = "0.04";
+our $VERSION = "0.05";
 
 my $verbose = undef;
 my $merge 	= undef;
@@ -129,10 +129,6 @@ It supports RLE (Run Length Encoded) IPS patches as well.
 =head2 Flags
 
 =over 4
-
-=item * ips.pl patch.ips file.rom
-
-Prints details on each applied patch record to STDOUT.
 
 =item * ips.pl --merge=newpatch.ips patch1.ips patch2.ips
 

@@ -1,4 +1,9 @@
 Changelog
+v0.05
+* IPS v2 truncation support.
+* Can apply multiple patches at a time.
+* Can merge multiple IPS patches into a single IPS patch (experimental, no IPS v2 support yet).
+* More documentation.
 
 v0.04
 * ips.pl now uses IPS and IPS::Record module for code reuse, granularity over patches, etc.

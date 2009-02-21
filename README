@@ -1,8 +1,8 @@
 NAME
-    ips.pl - Patches a file with records provided from an IPS patch.
+    ips.pl - Patches a file with records provided from IPS patches.
 
 SYNOPSIS
-            ips.pl [--verbose] myfilepatch.ips my.file my.file2 my.file3
+            ips.pl file1 patch1.ips ... file2 patch2.ips ...
 
 DESCRIPTION
     ips.pl is a reimplementation of a Perl script found in the wild
@@ -12,16 +12,15 @@ DESCRIPTION
     RLE (Run Length Encoded) IPS patches as well.
 
   Flags
-    *   ips.pl --verbose patch.ips file.rom
+    *   ips.pl --merge=newpatch.ips patch1.ips patch2.ips
 
-        Prints details on each applied patch record to STDOUT.
+        Merges multiple IPS patches into one IPS patch.
 
 HOMEPAGE
     <http://github.com/chinesefood/ips.pl/tree/master>
 
 COPYRIGHT
-    Copyright 2003, 2009 chinesefood
-    (eat.more.goawayspam.chinese.food@goawayspam.gmail.com)
+    Copyright 2003, 2009 chinesefood (eat.more.chinese.food@gmail.com)
 
     This program is free software; you can redistribute it and/or modify it
     under the terms of the GNU General Public License as published by the
