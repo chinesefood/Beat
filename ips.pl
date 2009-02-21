@@ -112,23 +112,31 @@ __END__
 
 =head1 NAME
 
-ips.pl - Patches a file with records provided from an IPS patch.
+ips.pl - Patches a file with records provided from IPS patches.
 
 =head1 SYNOPSIS
 
-	ips.pl [--verbose] myfilepatch.ips my.file my.file2 my.file3
+	ips.pl file1 patch1.ips ... file2 patch2.ips ...
 
 =head1 DESCRIPTION
 
-ips.pl is a reimplementation of a Perl script found in the wild (L<http://www.zophar.net/utilities/patchutil/ips-pl.html>) which will apply patches in the IPS format to the file specified.  The IPS file format can be found at L<http://zerosoft.zophar.net/ips.php>.  It supports RLE (Run Length Encoded) IPS patches as well.
+ips.pl is a reimplementation of a Perl script found in the wild
+(L<http://www.zophar.net/utilities/patchutil/ips-pl.html>) which
+will apply patches in the IPS format to the file specified.  The IPS
+file format can be found at L<http://zerosoft.zophar.net/ips.php>.
+It supports RLE (Run Length Encoded) IPS patches as well.
 
 =head2 Flags
 
 =over 4
 
-=item * ips.pl --verbose patch.ips file.rom
+=item * ips.pl patch.ips file.rom
 
 Prints details on each applied patch record to STDOUT.
+
+=item * ips.pl --merge=newpatch.ips patch1.ips patch2.ips
+
+Merges multiple IPS patches into one IPS patch.
 
 =back
 
@@ -138,7 +146,7 @@ L<http://github.com/chinesefood/ips.pl/tree/master>
 
 =head1 COPYRIGHT
 
-Copyright 2003, 2009 chinesefood (eat.more.goawayspam.chinese.food@goawayspam.gmail.com)
+Copyright 2003, 2009 chinesefood (eat.more.chinese.food@gmail.com)
 
 This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
