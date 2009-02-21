@@ -192,6 +192,10 @@ opened by IPS::init().  The offset is returned.
 sub read_rom_offset {
 	my ($self) = @_;
 
+	unless ( $self->get_ips_patch() ) {
+		croak("This record is not associated with an IPS object");
+	}
+
 	my $fh = $self->get_ips_patch()->get_patch_filehandle();
 	my $fh_initial_position = tell($fh);
 	seek($fh, $self->get_record_offset(), SEEK_SET);
@@ -218,6 +222,10 @@ The data size is returned.
 sub read_data_size {
 	my ($self) = @_;
 
+	unless ( $self->get_ips_patch() ) {
+		croak("This record is not associated with an IPS object");
+	}
+
 	my $fh = $self->get_ips_patch()->get_patch_filehandle();
 	my $fh_initial_position = tell($fh);
 	seek($fh, $self->get_record_offset() + IPS_DATA_OFFSET_SIZE, SEEK_SET);
@@ -241,6 +249,10 @@ RLE decoded data from the filehandle opened by IPS::init().
 
 sub read_rle_length {
 	my ($self) = @_;
+
+	unless ( $self->get_ips_patch() ) {
+		croak("This record is not associated with an IPS object");
+	}
 
 	my $fh = $self->get_ips_patch()->get_patch_filehandle();
 	my $fh_initial_position = tell($fh);
@@ -266,6 +278,10 @@ record.  Returns the packed data byte.
 sub read_rle_data {
 	my ($self) = @_;
 
+	unless ( $self->get_ips_patch() ) {
+		croak("This record is not associated with an IPS object");
+	}
+
 	my $fh = $self->get_ips_patch()->get_patch_filehandle();
 	my $fh_initial_position = tell($fh);
 	seek($fh, $self->get_record_offset() + IPS_DATA_OFFSET_SIZE + IPS_DATA_SIZE + IPS_RLE_LENGTH, SEEK_SET);
@@ -289,6 +305,10 @@ it.
 
 sub read_data {
 	my ($self) = @_;
+
+	unless ( $self->get_ips_patch() ) {
+		croak("This record is not associated with an IPS object");
+	}
 
 	my $fh = $self->get_ips_patch()->get_patch_filehandle();
 	my $fh_initial_position = tell($fh);
