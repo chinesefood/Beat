@@ -7,98 +7,141 @@ use IPS;
 
 our $VERSION = "0.05";
 
+# Check for flags in arguments.
+
 my $verbose = undef;
-my $merge 	= undef;
+my $merge   = undef;
 GetOptions(
-	"verbose"   => \$verbose,
-	"merge=s"	=> \$merge,
+    "verbose"   => \$verbose,
+    "merge=s"   => \$merge,
 );
+
+# Let the user know they didn't specify any actions.
 
 print_usage_statement() unless (@ARGV);
 
+# Construct an IPS instance here to use its methods.
+
 my $ips = IPS->new();
 
+# Merge patches together into one patch.
+
 if ($merge) {
-	my $merged_ips = IPS->new();
 
-	foreach (@ARGV) {
-		my $ips = IPS->new('patch_file' => $_);
+    # Perform the merge by pushing all patch records into one IPS instance.
 
-		$merged_ips->push_record( $ips->get_all_records() );
-	}
+    foreach (@ARGV) {
+        my $ips_to_merge = IPS->new( 'patch_file' => $_ );
+        $ips->push_record( $ips->get_all_records() );
+    }
 
-	$merged_ips->write_ips_patch($merge);
-	exit;
+    # Finalize the merge by writing to disk.
+
+    $ips->write_ips_patch($merge);
+    exit;
 }
 
+# The argument list is parsed to allow for multiple patches per file.
+
 my %patches = build_patch_hash();
-foreach my $rom ( keys(%patches) ) {
-	print "Patching $rom...\n";
+foreach my $rom ( keys %patches ) {
+    print "Patching $rom...\n";
 
-	foreach my $patch ( @{$patches{$rom}} ) {
-		print "\tApplying $patch\n";
+    # Patches are applied to arrive at the modified file.
 
-		$ips->apply_ips_patch($rom, $patch);
-	}
+    foreach my $patch ( @{ $patches{$rom} } ) {
+        print "\tApplying $patch\n";
+        $ips->apply_ips_patch($rom, $patch);
+    }
 }
 
 exit;
 
+# A hash of filenames pointing to an arrayref of patches makes patching easy.
+
 sub build_patch_hash {
-	my %patches;
+    my %patches;
 
-	FIND_ROMS: for (my $i = 0; $i < @ARGV; $i++) {
-		my $file = $ARGV[$i];
-		open(ROM, $file) or die("Couldn't open $file.\n");
+    # FIND_ROMS crawls across all arguments looking for files to patch.
 
-		unless ( $ips->check_header(*ROM) ) {
-			my @patches;
+    FIND_ROMS: for (my $i = 0; $i < @ARGV; $i++) {
 
-			PUSH_PATCHES: for (my $j = $i + 1; $j < @ARGV; $j++) {
-				my $possible_patch = $ARGV[$j];
-				open(PATCH, $possible_patch) or die("Couldn't open possible patch $possible_patch.\n");
+        # Open the file to find if it is a file to be patched.
 
-				my $result = $ips->check_header(*PATCH);
+        my $file = $ARGV[$i];
+        open ROM, $file or die "Couldn't open $file.\n";
 
-				close(PATCH);
+        # The loop will eventually bump into a non-patch file and next along.
 
-				last PUSH_PATCHES unless $result;
+        unless ( $ips->check_header(*ROM) ) {
+            my @patches;
 
-				push(@patches, $possible_patch);
-			}
+            # The list of patches is built here.  $i + 1 is the first patch.
 
-			$patches{$file} = \@patches;
-		}
-		else {
-			close(ROM);
-			next FIND_ROMS;
-		}
-	}
+            PUSH_PATCHES: for (my $j = $i + 1; $j < @ARGV; $j++) {
 
-	return %patches;
+                # Open the file to find if it is a patch.
+
+                my $possible_patch = $ARGV[$j];
+                open PATCH, $possible_patch
+                    or die "Couldn't open $possible_patch.\n";
+
+                # This test determines if a non-patch file was found.
+
+                my $result = $ips->check_header(*PATCH);
+                close PATCH;
+
+                # Exit the loop and start building another patch array.
+
+                last PUSH_PATCHES unless $result;
+
+                # Add to the patch array.
+
+                push @patches, $possible_patch;
+            }
+
+            # The list of patches is stored in the patch hash to be accessed.
+
+            $patches{$file} = \@patches;
+        }
+        else {
+            close ROM;
+
+            # Start building another patch array.
+
+            next FIND_ROMS;
+        }
+    }
+
+    return %patches;
 }
 
+# Let the user know they didn't provide enough arguments.
+
 sub print_usage_statement {
-	print "ips.pl v$VERSION\n\n";
-	print "Usage: ips.pl [--verbose] IPS_PATCH FILE1 FILE2 ...\n";
-	print "Patches FILES using an IPS patch.\n\n";
+    print
+        "ips.pl v$VERSION\n\n",
+        "Usage: ips.pl [--verbose] IPS_PATCH FILE1 FILE2 ...\n",
+        "Patches FILES using an IPS patch.\n\n",
 
-	print "Copyright 2003, 2009 chinesefood (eat.more.chinese.food\@gmail.com)\n";
-	print "Homepage:  http://github.com/chinesefood/ips.pl/tree/master\n";
-	print "This program is free software; you can redistribute it and/or modify it under\n".
-		  "the terms of the GNU General Public License as published by the Free Software\n".
-		  "Foundation; either version 2 of the License, or (at your option) any later\n".
-		  "version.\n";
+        "Copyright 2003, 2009 chinesefood (eat.more.chinese.food\@gmail.com)\n",
+        "Homepage:  http://github.com/chinesefood/ips.pl/tree/master\n\n",
 
-	print "This program is distributed in the hope that it will be useful, but WITHOUT\n".
-		  "ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n".
-		  "FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n";
+        "This program is free software; you can redistribute it and/or modify it under\n",
+        "the terms of the GNU General Public License as published by the Free Software\n",
+        "Foundation; either version 2 of the License, or (at your option) any later\n",
+        "version.\n\n",
 
-	print "You should have received a copy of the GNU General Public License along with\n".
-		  "this program; if not, write to the Free Software Foundation, Inc., 51 Franklin\n".
-		  "Street, Fifth Floor, Boston, MA  02110-1301, USA.\n";
+        "This program is distributed in the hope that it will be useful, but WITHOUT\n",
+        "ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS\n",
+        "FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.\n\n",
 
-	exit;
+        "You should have received a copy of the GNU General Public License along with\n",
+        "this program; if not, write to the Free Software Foundation, Inc., 51 Franklin\n",
+        "Street, Fifth Floor, Boston, MA  02110-1301, USA.\n",
+        ;
+
+    exit;
 }
 
 
@@ -116,7 +159,7 @@ ips.pl - Patches a file with records provided from IPS patches.
 
 =head1 SYNOPSIS
 
-	ips.pl file1 patch1.ips ... file2 patch2.ips ...
+    ips.pl file1 patch1.ips ... file2 patch2.ips ...
 
 =head1 DESCRIPTION
 
@@ -144,11 +187,20 @@ L<http://github.com/chinesefood/ips.pl/tree/master>
 
 Copyright 2003, 2009 chinesefood (eat.more.chinese.food@gmail.com)
 
-This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.
 
 The original author is unknown at the time of release.
 
