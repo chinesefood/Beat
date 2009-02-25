@@ -3,10 +3,9 @@ package IPS::Record;
 use strict;
 use warnings;
 
-use constant IPS_DATA_OFFSET_SIZE       => 3;
-use constant IPS_DATA_SIZE              => 2;
-use constant IPS_DATA_POSITION
-    => IPS_DATA_OFFSET_SIZE + IPS_DATA_SIZE;
+use constant IPS_DATA_OFFSET_SIZE   => 3;
+use constant IPS_DATA_SIZE          => 2;
+use constant IPS_DATA_POSITION      => IPS_DATA_OFFSET_SIZE + IPS_DATA_SIZE;
 
 use constant IPS_RLE_LENGTH             => 2;
 use constant IPS_RLE_LENGTH_POSITION    => IPS_DATA_POSITION;
@@ -27,10 +26,10 @@ IPS::Record - A package for storing IPS record data.
 =head1 SYNOPSIS
 
     my $r = IPS::Record->new(
-        'num'           => 0,
-        'rom_offset'    => 1234,
-        'size'          => 83,
-        'data'          => $data,
+        num           => 0,
+        rom_offset    => 1234,
+        size          => 83,
+        data          => $data,
     );
 
 =head1 DESCRIPTION
@@ -50,18 +49,18 @@ The interface is not finished.  Do expect changes.
 Instantiates a new IPS::Record object and returns a reference to
 that object.  A hash may be passed to override default values:
 
-    'num'           => 3,       # Record number, does nothing
-                                # special yet
-    'data'          => $data,   # Raw, packed data to be smashed
-                                # into an IPS patch
-    'rom_offset'    => 0x0F10,  # Offset declaring where to start
-                                # patching in the file
-    'data_size'     => 0x100,   # Size of this data to determine
-                                # where the next record starts in
-                                # the IPS patch
-    'rle_length'    => undef,   # Length of RLE decoded data
-    'ips_patch'     => $ips,    # Parent IPS object this record
-                                # belongs to
+    num         => 3,       # Record number, does nothing special
+                            # yet
+    data        => $data,   # Raw, packed data to be smashed into
+                            # an IPS patch
+    rom_offset  => 0x0F10,  # Offset declaring where to start
+                            # patching in the file
+    data_size   => 0x100,   # Size of this data to determine where
+                            # the next record starts in the IPS
+                            # patch
+    rle_length  => undef,   # Length of RLE decoded data
+    ips_patch   => $ips,    # Parent IPS object this record belongs
+                            # to
 
 =cut
 
@@ -76,35 +75,35 @@ sub new {
 
         # The record number.
 
-        'num'           => undef,
+        num           => undef,
 
         # The packed data loaded from the patch.
 
-        'data'          => undef,
+        data          => undef,
 
         # The file offset of the record in the IPS patch.
 
-        'record_offset' => undef,
+        record_offset => undef,
 
         # The file offset of the data to be patched.
 
-        'rom_offset'    => undef,
+        rom_offset    => undef,
 
         # The size of the data held in the patch.
 
-        'data_size'     => undef,
+        data_size     => undef,
 
         # Flag indicating if the record is a RLE record.
 
-        'is_rle'        => undef,
+        is_rle        => undef,
 
         # Length of the RLE data in the new file.
 
-        'rle_length'    => undef,
+        rle_length    => undef,
 
         # Holds the object to which the IPS record is associated.
 
-        'ips_patch'     => undef,
+        ips_patch     => undef,
     };
 
     # Replaces the default data with data passed at runtime.
@@ -377,7 +376,7 @@ sub read_rle_length {
     # Read the data and ensure it's correct.
 
     my $rle_length;
-    my $bytes_read = read($fh, $rle_length, IPS_RLE_LENGTH);
+    my $bytes_read = read $fh, $rle_length, IPS_RLE_LENGTH;
     unless( $bytes_read == IPS_RLE_LENGTH ) {
         croak "read(): Error reading RLE size";
     }
@@ -421,7 +420,7 @@ sub read_rle_data {
     # Read the data and ensure it's correct.
 
     my $rle_data;
-    my $bytes_read = read($fh, $rle_data, IPS_RLE_DATA_SIZE);
+    my $bytes_read = read $fh, $rle_data, IPS_RLE_DATA_SIZE;
     unless( $bytes_read == IPS_RLE_DATA_SIZE ) {
         croak "read(): Error reading RLE data";
     }
@@ -470,7 +469,7 @@ sub read_data {
     # Read the data and ensure it's correct.
 
     my $data;
-    my $bytes_read = read($fh, $data, $data_size);
+    my $bytes_read = read $fh, $data, $data_size;
     unless ( $bytes_read == $data_size ) {
         croak "read(): Error reading data to be patched";
     }
