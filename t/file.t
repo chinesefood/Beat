@@ -15,7 +15,7 @@ use lib qw(
 
 
 BEGIN {
-    use_ok('IPS::File');
+    use_ok('Beat::File');
 }
 
 
@@ -30,7 +30,7 @@ my @methods = qw(
     get_line
 );
 
-can_ok('IPS::File', @methods);
+can_ok('Beat::File', @methods);
 
 
 
@@ -40,7 +40,7 @@ can_ok('IPS::File', @methods);
 
 
 {
-    new_ok('IPS::File');
+    new_ok('Beat::File');
 }
 
 
@@ -51,7 +51,7 @@ can_ok('IPS::File', @methods);
 
 
 {
-    my $f = IPS::File->new({
+    my $f = Beat::File->new({
         'read_from' => 'data/case1.dat',
     });
     
@@ -68,7 +68,7 @@ can_ok('IPS::File', @methods);
 
 
 {
-    my $f = IPS::File->new({
+    my $f = Beat::File->new({
         'write_to' => File::Temp->new(UNLINK => 1)->filename(),
     });
     

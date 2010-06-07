@@ -14,17 +14,17 @@ use lib qw(
 );
 
 
-use IPS::File;
+use Beat::File;
 
 BEGIN {
-    use_ok('IPS::Record::EOF', qw(
+    use_ok('Beat::Record::EOF', qw(
         IPS_EOF
         IPS_EOF_LENGTH
     ));
 }
 
 
-my $eof = new_ok('IPS::Record::EOF');
+my $eof = new_ok('Beat::Record::EOF');
 
 
 my @eof_methods = qw(
@@ -34,7 +34,7 @@ my @eof_methods = qw(
 can_ok $eof, @eof_methods;
 
 
-my $f = IPS::File->new({
+my $f = Beat::File->new({
     'write_to'  => File::Temp->new(UNLINK => 1)->filename(),
 });
 
@@ -44,4 +44,4 @@ $eof->write({
 
 $f->seek(0);
 
-ok(IPS::Record::EOF->new({'filehandle' => $f}), "EOF Writing Test");
+ok(Beat::Record::EOF->new({'filehandle' => $f}), "EOF Writing Test");

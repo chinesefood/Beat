@@ -1,4 +1,4 @@
-package IPS::Record;
+package Beat::Record;
 
 
 use strict;
@@ -9,11 +9,11 @@ use diagnostics;
 use Carp;
 
 
-use IPS::Record::Header;
-use IPS::Record::V1;
-use IPS::Record::RLE;
-use IPS::Record::EOF;
-use IPS::Record::V2;
+use Beat::Record::Header;
+use Beat::Record::V1;
+use Beat::Record::RLE;
+use Beat::Record::EOF;
+use Beat::Record::V2;
 
 
 
@@ -57,27 +57,27 @@ sub new {
         
         
         if ($is_header) {
-            return IPS::Record::Header->new($args_ref);
+            return Beat::Record::Header->new($args_ref);
         }
         elsif ($cur_pos == $file_size) {
             return undef;
         }
         elsif (!$is_v2 && !$is_eof) {
             if ($self->_check_for_rle($fh)) {
-                return IPS::Record::RLE->new($args_ref);
+                return Beat::Record::RLE->new($args_ref);
             }
 
-            return IPS::Record::V1->new($args_ref);
+            return Beat::Record::V1->new($args_ref);
         }
 
         if ($is_v2) {
             return [
-                IPS::Record::EOF->new($args_ref),
-                IPS::Record::V2->new($args_ref),
+                Beat::Record::EOF->new($args_ref),
+                Beat::Record::V2->new($args_ref),
             ];
         }
 
-        return IPS::Record::EOF->new($args_ref);
+        return Beat::Record::EOF->new($args_ref);
     }
     
     
@@ -114,7 +114,7 @@ sub new {
         $fh->seek($init_pos + 3);
 
         my $flag = $fh->read({
-            'length'        => IPS::Record::V1::IPS_RECORD_SIZE_LENGTH,
+            'length'        => Beat::Record::V1::IPS_RECORD_SIZE_LENGTH,
         });
 
         $flag = hex unpack "H*", $flag;

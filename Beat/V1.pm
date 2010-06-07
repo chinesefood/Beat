@@ -1,4 +1,4 @@
-package IPS::V1;
+package Beat::V1;
 
 
 use strict;
@@ -7,10 +7,10 @@ use diagnostics;
 
 
 use base qw(
-    IPS
+    Beat
 );
 
-use IPS::Record;
+use Beat::Record;
 
 
 
@@ -43,8 +43,8 @@ sub load_records {
     
     
     LOAD_RECORDS: {
-        my $r = IPS::Record->new($args_ref);
-        
+        my $r = Beat::Record->new($args_ref);
+
         if (defined $r) {
             $self->push_record($r);
         
@@ -64,7 +64,7 @@ sub patch {
     my ($self, $args_ref) = @_;
     
     
-    my $fh = IPS::File->new({
+    my $fh = Beat::File->new({
         'write_to'  => $args_ref->{'filename'},
     });
     
@@ -98,8 +98,8 @@ sub patch {
         }
         else {
             $self->set_record({
-                0   => IPS::Record::Header->new(),
-                1   => IPS::Record::EOF->new(),
+                0   => Beat::Record::Header->new(),
+                1   => Beat::Record::EOF->new(),
             });
         }
         

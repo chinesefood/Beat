@@ -10,10 +10,10 @@ use Test::More qw(no_plan);
 
 use lib '../..';
 
-use IPS::File;
+use Beat::File;
 
 BEGIN {
-    use_ok('IPS::Diff');
+    use_ok('Beat::Diff');
 }
 
 
@@ -28,7 +28,7 @@ my @methods = qw(
     generate_rle_records
 );
 
-can_ok('IPS::Diff', @methods);
+can_ok('Beat::Diff', @methods);
 
 
 
@@ -36,16 +36,16 @@ can_ok('IPS::Diff', @methods);
 
 
 {
-    my $of = IPS::File->new({
+    my $of = Beat::File->new({
         'read_from' => 'data/case1.dat',
     });
     
-    my $nf = IPS::File->new({
+    my $nf = Beat::File->new({
         'read_from' => 'data/case1.new.dat',
     });
     
     
-    my $d = IPS::Diff->new();
+    my $d = Beat::Diff->new();
     
     my @records = $d->generate_records({
         'old_file'  => $of,

@@ -16,11 +16,11 @@ use lib qw(
 );
 
 
-use IPS::File;
+use Beat::File;
 
 
 BEGIN {
-    use_ok('IPS::Record::RLE');
+    use_ok('Beat::Record::RLE');
 };
 
 
@@ -42,14 +42,14 @@ my @rle_methods = qw(
     set_offset
 );
 
-can_ok('IPS::Record::RLE', @rle_methods);
+can_ok('Beat::Record::RLE', @rle_methods);
 
 
 my $offset = 0x00;
 my $data   = 'C' x 0x10;
 my $size   = length $data;
 
-my $r_test = new_ok('IPS::Record::RLE' => [{
+my $r_test = new_ok('Beat::Record::RLE' => [{
     'offset'    => $offset,
     'data'      => $data,
 }]);
@@ -65,7 +65,7 @@ is($r_test->get_data(),   $data,   "Data Attribute");
     
 # Test record writing.
 
-my $r = IPS::Record::RLE->new();
+my $r = Beat::Record::RLE->new();
 
 $r->set_offset($offset);
 $r->set_size($size);
@@ -78,7 +78,7 @@ is($r->get_data(),      $data,   "Data mutators");
 
 
 
-my $f = IPS::File->new({
+my $f = Beat::File->new({
     'write_to'  => File::Temp->new(UNLINK => 1)->filename(),
 });
 
@@ -89,7 +89,7 @@ $r->write({
 
 $f->seek(0);
 
-my $r_test_f = IPS::Record::RLE->new({
+my $r_test_f = Beat::Record::RLE->new({
     'filehandle'    => $f,
 });
 
@@ -99,7 +99,7 @@ is($r_test_f->get_data(),   $data,      "Data Read/Write Test");
 
 
 {
-    my $nf = IPS::File->new({
+    my $nf = Beat::File->new({
         'write_to'  => File::Temp->new(UNLINK => 1)->filename(),
     });
     

@@ -1,4 +1,4 @@
-package IPS::Record::V1;
+package Beat::Record::V1;
 
 
 use strict;

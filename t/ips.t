@@ -11,12 +11,12 @@ use Test::More qw(no_plan);
 
 use lib '..';
 
-use IPS::Record::EOF;
-use IPS::Record::Header;
+use Beat::Record::EOF;
+use Beat::Record::Header;
 
 
 BEGIN {
-    use_ok('IPS');
+    use_ok('Beat');
 }
 
 
@@ -38,15 +38,15 @@ my @methods = qw(
     make
 );
 
-can_ok('IPS', @methods);
+can_ok('Beat', @methods);
 
 
 
 {
-    my $ips = new_ok('IPS'  => []);
+    my $ips = new_ok('Beat'  => []);
     
-    my $e = IPS::Record::EOF->new();
-    my $h = IPS::Record::Header->new();
+    my $e = Beat::Record::EOF->new();
+    my $h = Beat::Record::Header->new();
     
     
     $ips->push_record($e);
@@ -92,13 +92,13 @@ can_ok('IPS', @methods);
 
 {
     isa_ok(
-        IPS->new({'filename' => 'data/minimal.ips',}),
-        'IPS::V1'
+        Beat->new({'filename' => 'data/minimal.ips',}),
+        'Beat::V1'
     );
     
     isa_ok(
-        IPS->new({'filename' => 'data/minimal_v2.ips',}),
-        'IPS::V2'
+        Beat->new({'filename' => 'data/minimal_v2.ips',}),
+        'Beat::V2'
     );
 }
 
@@ -106,11 +106,11 @@ can_ok('IPS', @methods);
 
 
 {
-    my $ips = IPS->new({
+    my $ips = Beat->new({
         'filename'  => 'data/eof_test.ips',
     });
     
-    isa_ok($ips, 'IPS::V2');
+    isa_ok($ips, 'Beat::V2');
     
     my $eof = hex unpack("H*", pack("A*", 'EOF'));
     my $r = $ips->get_record(1);
@@ -125,17 +125,17 @@ can_ok('IPS', @methods);
 
 
 {
-    my $ips = IPS->new({
+    my $ips = Beat->new({
         'filename'  => 'data/all_record_types.ips',
     });
     
     my ($h, $v1, $rle, $eof, $v2) = $ips->get_all_records();
     
-    is(ref($h),   'IPS::Record::Header', "All Record Types Header Test");
-    is(ref($v1),  'IPS::Record::V1',     "All Record Types Record V1 Test");
-    is(ref($rle), 'IPS::Record::RLE',    "All Record Types Record RLE Test");
-    is(ref($eof), 'IPS::Record::EOF',    "All Record Types Record EOF Test");
-    is(ref($v2),  'IPS::Record::V2',     "All Record Types Record V2 Test");
+    is(ref($h),   'Beat::Record::Header', "All Record Types Header Test");
+    is(ref($v1),  'Beat::Record::V1',     "All Record Types Record V1 Test");
+    is(ref($rle), 'Beat::Record::RLE',    "All Record Types Record RLE Test");
+    is(ref($eof), 'Beat::Record::EOF',    "All Record Types Record EOF Test");
+    is(ref($v2),  'Beat::Record::V2',     "All Record Types Record V2 Test");
 }
 
 
@@ -193,7 +193,7 @@ can_ok('IPS', @methods);
     # my @records = $ips->get_all_patch_records();
     
     # is(@records, 1, 'IPS Patch Creation Test Case 3 has correct number of records');
-    # is(ref $records[0], 'IPS::Record::V2',
+    # is(ref $records[0], 'Beat::Record::V2',
         # 'IPS Patch Creation Test Case 3 has correct type of record'
     # );
     # is($records[0]->get_truncation_offset(), 1,

@@ -15,7 +15,7 @@ use lib qw(
 );
 
 
-use IPS::File;
+use Beat::File;
 
 
 
@@ -30,11 +30,11 @@ BEGIN {
         IPS_HEADER_LENGTH
     );
     
-    use_ok('IPS::Record::Header', @imports);
+    use_ok('Beat::Record::Header', @imports);
 }
 
 
-my $header = new_ok('IPS::Record::Header');
+my $header = new_ok('Beat::Record::Header');
 
 
 my @header_methods = qw(
@@ -44,7 +44,7 @@ my @header_methods = qw(
 can_ok $header, @header_methods;
 
 
-my $f = IPS::File->new({
+my $f = Beat::File->new({
     'write_to'  => File::Temp->new(UNLINK => 1)->filename(),
 });
 
@@ -54,7 +54,7 @@ $header->write({
 
 $f->seek(0);
 
-my $header_test = IPS::Record::Header->new({
+my $header_test = Beat::Record::Header->new({
     'filehandle'    => $f,
 });
 

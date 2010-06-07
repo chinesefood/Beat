@@ -1,4 +1,4 @@
-package IPS::File;
+package Beat::File;
 
 
 use strict;

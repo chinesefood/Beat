@@ -1,4 +1,4 @@
-package IPS;
+package Beat;
 
 
 use strict;
@@ -11,10 +11,10 @@ use Fcntl qw(:seek);
 use IO::File;
 
 
-use IPS::Record;
-use IPS::File;
-use IPS::V1;
-use IPS::V2;
+use Beat::Record;
+use Beat::File;
+use Beat::V1;
+use Beat::V2;
 
 use constant START_OF_FILE => 0;
 
@@ -22,8 +22,6 @@ use constant START_OF_FILE => 0;
 my %filename_of;    # Stores filenames of objects
 my %filehandle_of;  # Stores filehandles for IPS patches
 my %records_of;     # Store IPS records
-
-my %ips_of;         # Stores IPS objects
 
 
 
@@ -67,12 +65,12 @@ sub read {
     my $fh;
 
     if ($args_ref->{'filename'}) {
-        $fh = IPS::File->new({
+        $fh = Beat::File->new({
             'read_from' => $args_ref->{'filename'},
         });
     }
     else {
-        $fh = IPS::File->new({
+        $fh = Beat::File->new({
             'read_from'  => $self->get_filename()
         });
     }
@@ -101,12 +99,12 @@ sub write {
     my ($self, $args_ref) = @_;
 
 
-    my $fh = IPS::File->new({
+    my $fh = Beat::File->new({
         'write_to'  => $self->get_filename(),
     });
 
     if (defined $args_ref->{'filename'}) {
-        $fh = IPS::File->new({
+        $fh = Beat::File->new({
             'write_to'  => $args_ref->{'filename'},
         });
     }
@@ -182,8 +180,8 @@ sub get_all_patch_records {
 
 
     return grep {
-        ref($_) ne 'IPS::Record::Header' &&
-        ref($_) ne 'IPS::Record::EOF';
+        ref($_) ne 'Beat::Record::Header' &&
+        ref($_) ne 'Beat::Record::EOF';
     } $self->get_all_records();
 }
 
@@ -341,7 +339,7 @@ sub pop_patch_record {
         $records_of{$self} = [];
 
 
-        my $fh = IPS::File->new({
+        my $fh = Beat::File->new({
             'read_from' => $args_ref->{'filename'},
         });
 
@@ -353,8 +351,9 @@ sub pop_patch_record {
         my @records;
         my $is_v2 = 0;
 
+        
         LOAD_RECORDS: {
-            my $r = IPS::Record->new({
+            my $r = Beat::Record->new({
                 'filehandle'    => $fh
             });
 
@@ -377,27 +376,28 @@ sub pop_patch_record {
         }
 
         if ($is_v2) {
-            return IPS::V2->new({
+            return Beat::V2->new({
                 %$args_ref,
                 'records'   => \@records,
             });
         }
         else {
-            return IPS::V1->new({
+            return Beat::V1->new({
                 %$args_ref,
                 'records'   => \@records,
             });
         }
     }
-
-
-
-
-
-
-
-
-
 }
 
+
+sub DESTROY {
+    my ($self) = @_;
+    
+    delete $filename_of{$self};
+    delete $filehandle_of{$self};
+    delete $records_of{$self};
+}    
+
+    
 1;

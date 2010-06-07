@@ -19,13 +19,13 @@ BEGIN {
         ..
     );
     
-    use_ok('IPS::Record::V1', qw(
+    use_ok('Beat::Record::V1', qw(
         IPS_RECORD_OFFSET_LENGTH
         IPS_RECORD_SIZE_LENGTH
     ));
 };
 
-use IPS::File;
+use Beat::File;
 
 
 
@@ -43,14 +43,14 @@ my @v1_methods = qw(
     set_offset
 );
 
-can_ok('IPS::Record::V1', @v1_methods);
+can_ok('Beat::Record::V1', @v1_methods);
 
 
 my $offset = 0x00;
 my $data   = map { pack "C", $_ } (0..255);
 my $size   = length $data;
 
-my $r_test = new_ok('IPS::Record::V1' => [{
+my $r_test = new_ok('Beat::Record::V1' => [{
     'offset'    => $offset,
     'data'      => $data,
 }]);
@@ -65,7 +65,7 @@ is($r_test->get_data(),   $data,   "Data Attribute");
     
 # Test record writing.
 
-my $r = IPS::Record::V1->new();
+my $r = Beat::Record::V1->new();
 
 $r->set_offset($offset);
 $r->set_data($data);
@@ -76,7 +76,7 @@ is($r->get_size(),   $size,   "Size mutators"  );
 is($r->get_data(),   $data,   "Data mutators");
 
 
-my $f = IPS::File->new({
+my $f = Beat::File->new({
     'write_to'  => File::Temp->new(UNLINK   => 1)->filename(),
 });
 
@@ -88,7 +88,7 @@ $r->write({
 $f->seek(0);
 
 
-my $r_test_f = IPS::Record::V1->new({
+my $r_test_f = Beat::Record::V1->new({
     'filehandle'    => $f,
 });
 
@@ -100,7 +100,7 @@ is($r_test_f->get_data(),   $data,   "Data Read/Write Test");
 
 
 {
-    my $nf = IPS::File->new({
+    my $nf = Beat::File->new({
         'write_to'  => File::Temp->new(UNLINK => 1)->filename(),
     });
     

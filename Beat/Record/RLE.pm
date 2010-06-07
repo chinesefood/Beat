@@ -1,4 +1,4 @@
-package IPS::Record::RLE;
+package Beat::Record::RLE;
 
 
 use strict;
@@ -10,7 +10,7 @@ use Carp;
 
 
 use base qw(
-    IPS::Record::V1
+    Beat::Record::V1
     Exporter
 );
 
@@ -176,7 +176,7 @@ sub set_data {
     my $d = substr $data, 0, 1;
     
     
-    $self->IPS::Record::V1::set_data($d);
+    $self->Beat::Record::V1::set_data($d);
     $self->set_size($l);
 }
 
@@ -191,7 +191,7 @@ sub get_data_byte {
     my ($self) = @_;
     
     
-    return $self->IPS::Record::V1::get_data();
+    return $self->Beat::Record::V1::get_data();
 }
 
 
@@ -205,7 +205,7 @@ sub set_data_byte {
     my ($self, $d) = @_;
     
     
-    $self->IPS::Record::V1::set_data($d);
+    $self->Beat::Record::V1::set_data($d);
 }
 
 
