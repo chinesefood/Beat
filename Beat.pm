@@ -13,6 +13,7 @@ use IO::File;
 
 use Beat::Record;
 use Beat::File;
+use Beat::Diff;
 use Beat::V1;
 use Beat::V2;
 
@@ -49,6 +50,15 @@ sub new {
 sub make {
     my ($self, $args_ref) = @_;
 
+    my $diff = Beat::Diff->new();
+    
+    my @records = (
+        Beat::Record::Header->new(),
+        ($diff->generate_records($args_ref)),
+        Beat::Record::EOF->new(),
+    );
+    
+    $self->set_all_records(\@records);
 }
 
 
@@ -113,6 +123,29 @@ sub write {
     foreach my $r ($self->get_all_records()) {
         $r->write({
             'filehandle'    => $fh,
+        });
+    }
+}
+
+
+
+
+
+
+
+
+sub patch {
+    my ($self, $args_ref) = @_;
+    
+    
+    my $fh = Beat::File->new({
+        'write_to'  => $args_ref->{'filename'},
+    });
+    
+    
+    foreach my $r ($self->get_all_patch_records()) {
+        $r->patch({
+            'filehandle'    => $fh
         });
     }
 }

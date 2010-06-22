@@ -14,6 +14,9 @@ use lib '..';
 use Beat::Record::EOF;
 use Beat::Record::Header;
 
+use File::Temp;
+use File::Copy;
+use File::Compare;
 
 BEGIN {
     use_ok('Beat');
@@ -36,6 +39,7 @@ my @methods = qw(
     unshift_record
     
     make
+    patch
 );
 
 can_ok('Beat', @methods);
@@ -141,62 +145,107 @@ can_ok('Beat', @methods);
 
 
 
-# {
-    # my $ips = IPS->new();
+{
+    my $ips = Beat->new();
     
-    # $ips->make({
-        # 'old_file'  => 'data/case1.dat',
-        # 'new_file'  => 'data/case1.new.dat',
-    # });
+    $ips->make({
+        'old_file'  => 'data/case1.dat',
+        'new_file'  => 'data/case1.new.dat',
+    });
     
-    # my @records = $ips->get_all_patch_records();
+    my $tmp = File::Temp->new(UNLINK => 1);
     
-    # is(@records, 1, 'IPS Patch Creation Test Case 1 has correct number of records');
+    copy 'data/case1.dat', $tmp->filename();
     
-    # is($records[0]->get_data(), 'A' x 0x10,
-        # 'IPS Patch Creation Test Case 1 Data Verified');
-# }
+    $ips->patch({
+        'filename'  => $tmp->filename(),
+    });
+    
+    ok !compare('data/case1.new.dat', $tmp->filename()), 'Case 1:  Patching';
+}
 
 
 
 
-# {
-    # my $ips = IPS->new({
-        # 'old_file'  => 'data/case2.dat',
-        # 'new_file'  => 'data/case2.new.dat'
-    # });
+{
+    my $ips = Beat->new({
+        'old_file'  => 'data/case2.dat',
+        'new_file'  => 'data/case2.new.dat'
+    });
     
-    # my @records = $ips->get_all_patch_records();
     
-    # is(@records, 8, 'IPS Patch Creation Test Case 2 has correct number of records');
+    my $tmp = File::Temp->new(UNLINK => 1);
     
-    # my $is_even         = 1;
-    # my $is_data_correct = 1;
-    # foreach my $r (@records) {
-        # $is_even         = 0 if $r->get_offset() % 2;
-        # $is_data_correct = 0 if $r->get_data() ne 'B';
-    # }
+    copy 'data/case2.dat', $tmp->filename();
     
-    # ok($is_even,         'IPS Patch Creation Test Case 2 has correct offsets');
-    # ok($is_data_correct, 'IPS Patch Creation Test Case 2 has correct data');
-# }
+    $ips->patch({
+        'filename'  => $tmp->filename(),
+    });
+    
+    ok !compare('data/case2.new.dat', $tmp->filename()), 'Case 2:  Patching';
+}
 
 
 
 
-# {
-    # my $ips = IPS->new({
-        # 'old_file'  => 'data/case3.dat',
-        # 'new_file'  => 'data/case3.new.dat',
-    # });
+{
+    my $ips = Beat->new({
+        'old_file'  => 'data/case3.dat',
+        'new_file'  => 'data/case3.new.dat',
+    });
     
-    # my @records = $ips->get_all_patch_records();
+    my $tmp = File::Temp->new(UNLINK => 1);
     
-    # is(@records, 1, 'IPS Patch Creation Test Case 3 has correct number of records');
-    # is(ref $records[0], 'Beat::Record::V2',
-        # 'IPS Patch Creation Test Case 3 has correct type of record'
-    # );
-    # is($records[0]->get_truncation_offset(), 1,
-        # 'IPS Patch Creation Test Case 3 has correct truncation offset'
-    # );
-# }
+    copy 'data/case3.dat', $tmp->filename();
+    
+    $ips->patch({
+        'filename'  => $tmp->filename(),
+    });
+    
+    ok !compare('data/case3.new.dat', $tmp->filename()), 'Case 3:  Patching';
+}
+
+
+
+
+
+
+{
+    my $ips = Beat->new({
+        'old_file'  => 'data/case4.dat',
+        'new_file'  => 'data/case4.new.dat',
+    });
+    
+    my $tmp = File::Temp->new(UNLINK => 1);
+    
+    copy 'data/case4.dat', $tmp->filename();
+    
+    $ips->patch({
+        'filename'  => $tmp->filename(),
+    });
+    
+    ok !compare('data/case4.new.dat', $tmp->filename()), 'Case 4:  Patching';
+}
+
+
+
+
+
+
+
+{
+    my $ips = Beat->new({
+        'old_file'  => 'data/case5.dat',
+        'new_file'  => 'data/case5.new.dat',
+    });
+    
+    my $tmp = File::Temp->new(UNLINK => 1);
+    
+    copy 'data/case5.dat', $tmp->filename();
+    
+    $ips->patch({
+        'filename'  => $tmp->filename(),
+    });
+    
+    ok !compare('data/case5.new.dat', $tmp->filename()), 'Case 5:  Patching';
+}

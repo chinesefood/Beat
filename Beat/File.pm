@@ -145,6 +145,36 @@ sub truncate {
 
 
 
+sub eof {
+    my ($self) = @_;
+    
+    
+    return $fh_of{$self}->eof();
+}
+
+
+
+
+
+
+
+
+sub get_char {
+    my ($self) = @_;
+    
+    
+    return $self->read({
+        'length'    => 1,
+    });
+}
+
+
+
+
+
+
+
+
 {
     sub _open_file {
         my ($self, $args_ref) = @_;
@@ -176,14 +206,23 @@ sub truncate {
         my ($self, $args_ref) = @_;
         
         
+        if (defined $args_ref->{'offset'}) {
+            $self->seek($args_ref->{'offset'});
+        }
+        
+        
+        my $size = $args_ref->{'length'};
+        
+        
         my $num_bytes_read = CORE::read(
             ${$fh_of{$self}},
             my $data,
-            $args_ref->{'length'},
+            $size,
         );
         
-        unless ($num_bytes_read == $args_ref->{'length'}) {
-            croak "Incorrect number of bytes read";
+        unless ($num_bytes_read == $size) {
+            croak "Incorrect number of bytes read: $num_bytes_read bytes read "
+                . "when expecting $args_ref->{'length'}";
         }
         
         return $data;

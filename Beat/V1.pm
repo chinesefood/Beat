@@ -60,29 +60,6 @@ sub load_records {
 
 
 
-sub patch {
-    my ($self, $args_ref) = @_;
-    
-    
-    my $fh = Beat::File->new({
-        'write_to'  => $args_ref->{'filename'},
-    });
-    
-    
-    foreach my $r ($self->get_all_patch_records()) {
-        $r->patch({
-            'filehandle'    => $fh
-        });
-    }
-}
-
-
-
-
-
-
-
-
 {
     sub _init {
         my ($self, $args_ref) = @_;
