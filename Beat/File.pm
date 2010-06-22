@@ -179,10 +179,18 @@ sub get_char {
     sub _open_file {
         my ($self, $args_ref) = @_;
 
-
+        my $f = $args_ref->{'file'};
+        my $m = $args_ref->{'mode'};
+        
+        
+        if (!(-e $f)) {
+            $m = '>';
+        }
+        
+        
         my $fh = IO::File->new(
-            $args_ref->{'file'},
-            $args_ref->{'mode'},
+            $f,
+            $m,
         );
 
         if (!defined $fh) {
