@@ -1,0 +1,12 @@
+TODO
+
+1.0     Documented release
+
+0.9     Refactoring
+
+0.8     Error Handling
+
+0.7     Anonymous scalars will contain data for delta
+        IPS RLE patch creation support
+        
+0.6     IPS patch creation support
