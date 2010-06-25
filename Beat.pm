@@ -21,23 +21,16 @@ use constant START_OF_FILE => 0;
 
 
 my %filename_of;    # Stores filenames of objects
-my %filehandle_of;  # Stores filehandles for IPS patches
-my %records_of;     # Store IPS records
 
-
+my $header = Beat::Record::Header->new();
+my $eof    = Beat::Record::EOF->new();
 
 sub new {
     my ($class, $args_ref) = @_;
-
-
-    my $self = bless \do { my $anon_scalar }, ref($class) || $class;
-
-    if (defined($args_ref->{'filename'})
-        or (defined($args_ref->{'old_file'}) and defined($args_ref->{'new_file'}))) {
-        return $self->_init($args_ref);
-    }
-
-    return $self;
+    
+    my $self = bless [], ref($class) || $class;
+    
+    return $self->_init($args_ref);
 }
 
 
@@ -53,9 +46,7 @@ sub make {
     my $diff = Beat::Diff->new();
     
     my @records = (
-        Beat::Record::Header->new(),
-        ($diff->generate_records($args_ref)),
-        Beat::Record::EOF->new(),
+        $diff->generate_records($args_ref),
     );
     
     $self->set_all_records(\@records);
@@ -118,12 +109,21 @@ sub write {
             'write_to'  => $args_ref->{'filename'},
         });
     }
-
-
-    foreach my $r ($self->get_all_records()) {
+    
+    my ($v2) = grep { ref $_ eq 'Beat::Record::V2' } ($self->get_all_records());
+    
+    foreach my $r ($header, $self->get_all_records(), $eof) {
+        if (defined($v2) && $r == $v2) {
+            next;
+        }
+        
         $r->write({
             'filehandle'    => $fh,
         });
+    }
+    
+    if ($v2) {
+        $v2->write({'filehandle'    => $fh});
     }
 }
 
@@ -142,11 +142,20 @@ sub patch {
         'write_to'  => $args_ref->{'filename'},
     });
     
+    my ($v2) = grep { ref $_ eq 'Beat::Record::V2' } ($self->get_all_records());
     
-    foreach my $r ($self->get_all_patch_records()) {
+    foreach my $r ($self->get_all_records()) {
+        if (defined($v2) && $r == $v2) {
+            next;
+        }
+        
         $r->patch({
             'filehandle'    => $fh
         });
+    }
+    
+    if ($v2) {
+        $v2->patch({'filehandle'    => $fh});
     }
 }
 
@@ -159,15 +168,13 @@ sub patch {
 
 sub get_record {
     my ($self, @r) = @_;
-
-
-    my $records_ref = $records_of{$self};
+    
 
     if (@r == 1) {
-        return $records_ref->[$r[0]];
+        return $self->[shift @r];
     }
 
-    return map { $records_ref->[$_] } ( @r );
+    return map { $self->[$_] } ( @r );
 }
 
 
@@ -181,10 +188,8 @@ sub set_record {
     my ($self, $args_ref) = @_;
 
 
-    my $records_ref = $records_of{$self};
-
     foreach my $i (keys %$args_ref) {
-        $records_ref->[$i] = $args_ref->{$i};
+        $self->[$i] = $args_ref->{$i};
     }
 }
 
@@ -198,24 +203,7 @@ sub set_record {
 sub get_all_records {
     my ($self) = @_;
 
-    return @{$records_of{$self}};
-}
-
-
-
-
-
-
-
-
-sub get_all_patch_records {
-    my ($self) = @_;
-
-
-    return grep {
-        ref($_) ne 'Beat::Record::Header' &&
-        ref($_) ne 'Beat::Record::EOF';
-    } $self->get_all_records();
+    return @{$self};
 }
 
 
@@ -226,10 +214,11 @@ sub get_all_patch_records {
 
 
 sub set_all_records {
-    my ($self, $records_ref) = @_;
-
-
-    $records_of{$self} = $records_ref;
+    my ($self, $r_ref) = @_;
+    
+    splice @$self, 0;
+    
+    $self->push_record(@$r_ref);
 }
 
 
@@ -237,8 +226,8 @@ sub set_all_records {
 
 
 
-
-
+    
+    
 sub get_filename {
     my ($self) = @_;
 
@@ -269,7 +258,7 @@ sub push_record {
     my ($self, @r) = @_;
 
 
-    push @{$records_of{$self}}, @r;
+    push @$self, @r;
 }
 
 
@@ -283,7 +272,7 @@ sub pop_record {
     my ($self) = @_;
 
 
-    return pop @{$records_of{$self}};
+    return pop @$self;
 }
 
 
@@ -297,7 +286,7 @@ sub shift_record {
     my ($self) = @_;
 
 
-    return shift @{$records_of{$self}};
+    return shift @$self;
 }
 
 
@@ -311,7 +300,7 @@ sub unshift_record {
     my ($self, @r) = @_;
 
 
-    unshift @{$records_of{$self}}, @r;
+    unshift @$self, @r;
 }
 
 
@@ -357,26 +346,35 @@ sub pop_patch_record {
 
 
 {
-    my %filehandle_of;
-
-
     sub _init {
         my ($self, $args_ref) = @_;
 
-
-        if (defined($args_ref->{'old_file'}) and defined($args_ref->{'new_file'})) {
+        my $of       = $args_ref->{'old_file'};
+        my $nf       = $args_ref->{'new_file'};
+        my $f        = $args_ref->{'filename'};
+        my $records  = $args_ref->{'records'};
+        
+        $self->set_filename($f);
+        
+        if ($of and $nf) {
             $self->make($args_ref);
             return $self;
         }
+
+        if (defined $records) {
+            $self->push_record(@$records);
+            return $self;
+        }
         
-        $records_of{$self} = [];
+        
+        my $fh;
+        if (defined $f) {
+            $fh = Beat::File->new({
+                'read_from' => $f,
+            });
+        }
 
-
-        my $fh = Beat::File->new({
-            'read_from' => $args_ref->{'filename'},
-        });
-
-        if ($fh->get_size() == 0) {
+        if ($fh && $fh->get_size() == 0) {
             return $self;
         }
 
@@ -384,35 +382,44 @@ sub pop_patch_record {
         my @records;
         my $is_v2 = 0;
 
-        
-        LOAD_RECORDS: {
-            my $r = Beat::Record->new({
-                'filehandle'    => $fh
-            });
+        my $r;
+        while ($fh && ($r = Beat::Record->new({'filehandle'    => $fh}))) {
+            my $class = ref $r;
 
-            if (!$r) {
-                last LOAD_RECORDS;
-            }
-
-            if (ref($r) eq 'ARRAY') {
+            if ($class eq 'ARRAY') {
                 $is_v2 = 1;
 
-                push @records, @$r;
+                push @records, $r->[1];
+                
+                last;
+            }
+            elsif ($class eq 'Beat::Record::Header') {
+                next;
+            }
+            elsif ($class eq 'Beat::Record::EOF') {
+                last;
             }
             else {
                 push @records, $r;
             }
-
-            if ($r) {
-                redo LOAD_RECORDS;
-            }
         }
 
         if ($is_v2) {
-            return Beat::V2->new({
+            my $v2 = Beat::V2->new({
                 %$args_ref,
                 'records'   => \@records,
             });
+            
+            my ($v2r) = grep { ref($_) eq 'Beat::Record::V2' } (@records);
+            
+            if ($v2r) {
+                $v2->set_truncation_offset($v2r->get_offset());
+            }
+            else {
+                croak "Could not find truncation offset";
+            }
+            
+            return $v2;
         }
         else {
             return Beat::V1->new({
@@ -428,8 +435,6 @@ sub DESTROY {
     my ($self) = @_;
     
     delete $filename_of{$self};
-    delete $filehandle_of{$self};
-    delete $records_of{$self};
 }    
 
     

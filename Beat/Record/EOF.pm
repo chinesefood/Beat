@@ -30,7 +30,7 @@ sub new {
     my ($class, $args_ref) = @_;
     
     
-    my $self = bless \do { my $anon_scalar }, ref($class) || $class;
+    my $self = bless \do { my $anon_scalar = IPS_EOF }, ref($class) || $class;
     
     if (defined $args_ref->{'filehandle'}) {
         $self->_init($args_ref);

@@ -47,11 +47,9 @@ can_ok('Beat::V2', @methods);
         'filename'  => 'data/minimal_v2.ips',
     });
     
-    my ($header, $eof, $v2) = $ips->get_all_records();
+    my ($v2) = $ips->get_all_records();
     
     
-    is(ref $header, 'Beat::Record::Header', 'Minimal IPSv2 Patch Header Test');
-    is(ref $eof,    'Beat::Record::EOF',    'Minimal IPSv2 Patch EOF Test');
     is(ref $v2,     'Beat::Record::V2',     'Minimal IPSv2 Patch V2 Test');
     
     is($ips->get_truncation_offset(), 1, 'Minimal IPSv2 Truncation Offset Test');
@@ -70,13 +68,9 @@ can_ok('Beat::V2', @methods);
         'filename'  => $f->filename(),
     });
     
-    ($header, $eof, $v2) = $ips->get_all_records();
+    ($v2) = $ips->get_all_records();
     
-    is(ref $header, 'Beat::Record::Header', 'IPSv2 Patch Writing Header Test');
-    is(ref $eof,    'Beat::Record::EOF',    'IPSv2 Patch Writing EOF Test');
-    is(ref $v2,     'Beat::Record::V2',     'IPSv2 Patch Writing V2 Test');
-    
-    
+    is(ref $v2,     'Beat::Record::V2',     'IPSv2 Patch Writing V2 Test'); 
 }
 
 

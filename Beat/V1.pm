@@ -18,18 +18,18 @@ use Beat::Record;
 
 
 
-sub new {
-    my ($class, $args_ref) = @_;
+# sub new {
+    # my ($class, $args_ref) = @_;
     
     
-    my $self = bless \do { my $anon_scalar }, ref($class) || $class;
+    # my $self = bless \do { my $anon_scalar }, ref($class) || $class;
     
-    if (defined $args_ref->{'filename'}) {
-        $self->_init($args_ref);
-    }
+    # if (defined $args_ref->{'filename'}) {
+        # $self->_init($args_ref);
+    # }
     
-    return $self;
-}
+    # return $self;
+# }
 
 
 
@@ -50,36 +50,6 @@ sub load_records {
         
             redo LOAD_RECORDS;
         }
-    }
-}
-
-
-
-
-
-
-
-
-{
-    sub _init {
-        my ($self, $args_ref) = @_;
-        
-        
-        $self->set_filename($args_ref->{'filename'});
-        
-        if (defined $args_ref->{'records'}) {
-            $self->set_all_records($args_ref->{'records'});
-        }
-        elsif ($self->get_filename()) {
-            $self->read($args_ref);
-        }
-        else {
-            $self->set_record({
-                0   => Beat::Record::Header->new(),
-                1   => Beat::Record::EOF->new(),
-            });
-        }
-        
     }
 }
 

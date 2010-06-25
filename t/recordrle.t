@@ -68,7 +68,6 @@ is($r_test->get_data(),   $data,   "Data Attribute");
 my $r = Beat::Record::RLE->new();
 
 $r->set_offset($offset);
-$r->set_size($size);
 $r->set_data($data);
 
 

@@ -25,7 +25,6 @@ BEGIN {
 
 my @methods = qw(
     generate_records
-    generate_rle_records
 );
 
 can_ok('Beat::Diff', @methods);
@@ -68,20 +67,6 @@ can_ok('Beat::Diff', @methods);
     
     is $r->get_offset(), 0x10,       "Case 1:  Record Offset Test";
     is $r->get_data(),   'A' x 0x10, "Case 1:  Data Test";
-    
-    
-    
-    my @rle_records = $d->generate_rle_records({
-        'old_file'  => 'data/case1.dat',
-        'new_file'  => 'data/case1.new.dat',
-    });
-    
-    is(@rle_records, 1, "Case 1:  RLE One Delta");
-    
-    my $rle = shift @rle_records;
-    
-    is $rle->get_offset(), 0x10,      "Case 1:  RLE Record Offset Test";
-    is $rle->get_data(),   'A' x 0x10, "Case 1:  Data Test";
 }
 
 
@@ -107,23 +92,6 @@ can_ok('Beat::Diff', @methods);
         
         is $r->get_data,   $c++,         "Case 2:  Record $_ Data Test";
         is $r->get_offset, ($_ - 1) * 2, "Case 2:  Record $_ Offset Test";
-    }
-    
-    
-    
-    my @rle_records = $d->generate_rle_records({
-        'old_file'  => 'data/case2.dat',
-        'new_file'  => 'data/case2.new.dat',
-    });
-    
-    is @rle_records, 8, 'Case 2:  RLE Alternating Bytes';
-    
-    my $rle_c = 'B';
-    for (1..8) {
-        my $r = $rle_records[$_ - 1];
-        
-        is $r->get_data,   $rle_c++,         "Case 2:  RLE Record $_ Data Test";
-        is $r->get_offset, ($_ - 1) * 2, "Case 2:  RLE Record $_ Offset Test";
     }
 }
 
@@ -172,18 +140,7 @@ can_ok('Beat::Diff', @methods);
     
     
     is @records, 2, 'Case 4:  Deltas Larger Than 2^16';
-    
-    
-    
-    
-    
-    my @rle_records = $d->generate_rle_records({
-        'old_file'  => 'data/case4.dat',
-        'new_file'  => 'data/case4.new.dat',
-    });
-    
-    
-    is @rle_records, 2, 'Case 4:  RLE Deltas Larger Than 2^16';
+ 
 }
 
 
@@ -201,6 +158,7 @@ can_ok('Beat::Diff', @methods);
         'old_file'  => 'data/case5.dat',
         'new_file'  => 'data/case5.new.dat',
     });
+    
     
     is @records, 2, 'Case 5: New File Larger than Old File';
 }

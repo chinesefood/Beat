@@ -44,10 +44,9 @@ can_ok('Beat::V1', @methods);
         'filename'  => 'data/minimal.ips',
     });
 
-    my ($header, $eof) = $ips->get_record(0, 1);
+    my @records = $ips->get_all_records();
     
-    is(ref $header, 'Beat::Record::Header', 'Minimal IPS Patch Test 1');
-    is(ref $eof,    'Beat::Record::EOF',    'Minimal IPS Patch Test 2');
+    is(@records, 0 , 'Minimal IPSv1 Patch Loading Test');
     
     my $f = File::Temp->new(
         UNLINK => 1,
@@ -61,8 +60,7 @@ can_ok('Beat::V1', @methods);
         'filename'  => $f->filename(),
     });
     
-    is(ref $ips->get_record(0), 'Beat::Record::Header', 'Minimal IPS Writing Test 1');
-    is(ref $ips->get_record(1), 'Beat::Record::EOF',    'Minimal IPS Writing Test 2');
+    is($ips->get_all_records(), 0, 'Minimal IPSv1 Writing Test 1');
 }
 
 
@@ -79,16 +77,13 @@ can_ok('Beat::V1', @methods);
     
     my @records = $ips->get_all_records();
     
-    is(ref $records[0], 'Beat::Record::Header', "IPSv1 Example Header");
-    is(ref $records[1], 'Beat::Record::V1',     "IPSv1 Example Record");
+
+    is(ref $records[0], 'Beat::Record::V1',     "IPSv1 Example Record");
 
     
-    is($records[1]->get_offset(), 0,      'IPSv1 Example Record Offset');
-    is($records[1]->get_size(),   4,      'IPSv1 Example Record Size');
-    is($records[1]->get_data(),   'DATA', 'IPSv1 Example Record Data');
-    
-    
-    is(ref $records[2], 'Beat::Record::EOF', 'IPSv1 Example EOF');
+    is($records[0]->get_offset(), 0,      'IPSv1 Example Record Offset');
+    is($records[0]->get_size(),   4,      'IPSv1 Example Record Size');
+    is($records[0]->get_data(),   'DATA', 'IPSv1 Example Record Data');
     
     
     my $f = File::Temp->new(
@@ -105,16 +100,13 @@ can_ok('Beat::V1', @methods);
     
     @records = $ips->get_all_records();
     
-    is(ref $records[0], 'Beat::Record::Header', "IPSv1 Writing Header");
-    is(ref $records[1], 'Beat::Record::V1',     "IPSv1 Writing V1 Record");
+
+    is(ref $records[0], 'Beat::Record::V1',     "IPSv1 Writing V1 Record");
 
     
-    is($records[1]->get_offset(), 0,      'IPSv1 Writing V1 Offset');
-    is($records[1]->get_size(),   4,      'IPSv1 Writing V1 Size');
-    is($records[1]->get_data(),   'DATA', 'IPSv1 Writing V1 Data');
-    
-    
-    is(ref $records[2], 'Beat::Record::EOF', 'IPSv1 Writing Test EOF');
+    is($records[0]->get_offset(), 0,      'IPSv1 Writing V1 Offset');
+    is($records[0]->get_size(),   4,      'IPSv1 Writing V1 Size');
+    is($records[0]->get_data(),   'DATA', 'IPSv1 Writing V1 Data');
 }
 
 
@@ -130,21 +122,17 @@ can_ok('Beat::V1', @methods);
     });
     
     my @records = $ips->get_all_records();
-
-    is(ref $records[0], 'Beat::Record::Header', 'IPSv1 RLE Example Header');
-    is(ref $records[1], 'Beat::Record::RLE',    'IPSv1 RLE Example Record');
     
     
-    is($records[1]->get_offset(), 0,   'IPSv1 RLE Example Record Offset');
-    is($records[1]->get_size(),   16,  'IPSv1 RLE Example Record Size');
+    is(ref $records[0], 'Beat::Record::RLE',    'IPSv1 RLE Example Record');
+    
+    
+    is($records[0]->get_offset(), 0,   'IPSv1 RLE Example Record Offset');
+    is($records[0]->get_size(),   16,  'IPSv1 RLE Example Record Size');
     is(
-        $records[1]->get_data(),
-        $records[1]->get_data_byte() x $records[1]->get_size(),
+        $records[0]->get_data(), 'A' x $records[0]->get_size(),
         'IPSv1 RLE Example Record Data'
     );
-    
-    
-    is(ref $records[2], 'Beat::Record::EOF', 'IPSv1 RLE Example EOF');
     
     
     my $f = File::Temp->new(
@@ -161,20 +149,16 @@ can_ok('Beat::V1', @methods);
     
     @records = $ips->get_all_records();
     
-    is(ref $records[0], 'Beat::Record::Header', 'IPSv1 RLE Writing Test Header');
-    is(ref $records[1], 'Beat::Record::RLE',    'IPSv1 RLE Writing Test RLE Record');
+
+    is(ref $records[0], 'Beat::Record::RLE',    'IPSv1 RLE Writing Test RLE Record');
     
     
-    is($records[1]->get_offset(), 0,   'IPSv1 RLE Writing Test Record Offset');
-    is($records[1]->get_size(),   16,  'IPSv1 RLE Writing Test Record Size');
+    is($records[0]->get_offset(), 0,   'IPSv1 RLE Writing Test Record Offset');
+    is($records[0]->get_size(),   16,  'IPSv1 RLE Writing Test Record Size');
     is(
-        $records[1]->get_data(),
-        $records[1]->get_data_byte() x $records[1]->get_size(),
+        $records[0]->get_data(), 'A' x $records[0]->get_size(),
         'IPSv1 RLE Writing Test Record Data'
     );
-    
-    
-    is(ref $records[2], 'Beat::Record::EOF', 'IPSv1 RLE Writing Test EOF');
 }
 
 

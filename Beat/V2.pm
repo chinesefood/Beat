@@ -12,21 +12,21 @@ my %truncation_record_of;
 
 
 
-sub new {
-    my ($class, $args_ref) = @_;
+# sub new {
+    # my ($class, $args_ref) = @_;
     
     
-    my $self = bless \do { my $anon_scalar }, ref($class) || $class;
+    # my $self = bless \do { my $anon_scalar }, ref($class) || $class;
     
-    if (defined($args_ref->{'filename'}) or defined($args_ref->{'records'})) {
-        $self->_init($args_ref);
+    # if (defined($args_ref->{'filename'}) or defined($args_ref->{'records'})) {
+        # $self->_init($args_ref);
         
-        ($truncation_record_of{$self}) = grep { ref($_) eq 'Beat::Record::V2' }
-            $self->get_all_patch_records();
-    }
+        # ($truncation_record_of{$self}) = grep { ref($_) eq 'Beat::Record::V2' }
+            # $self->get_all_patch_records();
+    # }
     
-    return $self;
-}
+    # return $self;
+# }
 
 
 
@@ -76,11 +76,11 @@ sub get_truncation_offset {
 
 
 sub set_truncation_offset {
-    my ($self, $args_ref) = @_;
+    my ($self, $o) = @_;
     
     
     my $r = Beat::Record::V2->new({
-        'truncation_offset' => $args_ref->{'truncation_offset'},
+        'offset' => $o
     });
     
     $truncation_record_of{$self} = $r;

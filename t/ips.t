@@ -28,7 +28,6 @@ my @methods = qw(
     set_filename
     
     get_all_records
-    set_all_records
     
     get_record
     set_record
@@ -78,14 +77,6 @@ can_ok('Beat', @methods);
     is($ips->get_all_records(), 2, "Get All Records Test");
     
     
-    my $records_ref = [$e, $h];
-    
-    $ips->set_all_records($records_ref);
-    
-    is($ips->get_record(0), $e, "Set All Records Test 1");
-    is($ips->get_record(1), $h, "Set All Records Test 2");
-    
-    
     $ips->set_filename('ips.ips');
     
     is($ips->get_filename(), 'ips.ips', "Get/Set Filename Test");
@@ -117,7 +108,7 @@ can_ok('Beat', @methods);
     isa_ok($ips, 'Beat::V2');
     
     my $eof = hex unpack("H*", pack("A*", 'EOF'));
-    my $r = $ips->get_record(1);
+    my $r = $ips->get_record(0);
     
     is($r->get_offset(), $eof,  "Offset is 'EOF'");
     is($r->get_data(),   'EOF', "Data is 'EOF'");
@@ -133,12 +124,10 @@ can_ok('Beat', @methods);
         'filename'  => 'data/all_record_types.ips',
     });
     
-    my ($h, $v1, $rle, $eof, $v2) = $ips->get_all_records();
+    my ($v1, $rle, $v2) = $ips->get_all_records();
     
-    is(ref($h),   'Beat::Record::Header', "All Record Types Header Test");
     is(ref($v1),  'Beat::Record::V1',     "All Record Types Record V1 Test");
     is(ref($rle), 'Beat::Record::RLE',    "All Record Types Record RLE Test");
-    is(ref($eof), 'Beat::Record::EOF',    "All Record Types Record EOF Test");
     is(ref($v2),  'Beat::Record::V2',     "All Record Types Record V2 Test");
 }
 

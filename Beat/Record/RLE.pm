@@ -99,8 +99,7 @@ sub read {
     });
     
     $self->set_offset($o);
-    $self->set_size($rs);
-    $self->set_data_byte($d);
+    $self->set_data($d x $rs);
 }
 
 
@@ -131,7 +130,7 @@ sub get_size {
     my ($self) = @_;
     
     
-    return $rle_size_of{$self};
+    return length $$self;
 }
 
 
@@ -144,68 +143,9 @@ sub get_size {
 sub set_size {
     my ($self, $rs) = @_;
     
+    my $d = substr $$self, 0, 1;
     
-    $rle_size_of{$self} = $rs;
-}
-
-
-
-
-
-
-
-
-sub get_data {
-    my ($self) = @_;
-    
-    
-    return $self->get_data_byte() x $self->get_size();
-}
-
-
-
-
-
-
-
-
-sub set_data {
-    my ($self, $data) = @_;
-    
-    my $l = length $data;
-    my $d = substr $data, 0, 1;
-    
-    
-    $self->Beat::Record::V1::set_data($d);
-    $self->set_size($l);
-}
-
-
-
-
-
-
-
-    
-sub get_data_byte {
-    my ($self) = @_;
-    
-    
-    return $self->Beat::Record::V1::get_data();
-}
-
-
-
-
-
-
-
-
-sub set_data_byte {
-    my ($self, $d) = @_;
-    
-    
-    $self->Beat::Record::V1::set_data($d);
+    $self->set_data($d x $rs);
 }
 
 
@@ -280,7 +220,7 @@ sub set_data_byte {
     sub _write_data {
         my ($self, $args_ref) = @_;
         
-        $args_ref->{'filehandle'}->write( $self->get_data_byte() );
+        $args_ref->{'filehandle'}->write( substr $$self, 0, 1 );
     }
 }
 

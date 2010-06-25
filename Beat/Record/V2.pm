@@ -116,7 +116,7 @@ sub set_offset {
             . IPS_TRUNCATION_OFFSET_MIN;
     }
     
-    $truncation_offset_of{$self} = $o;
+    $$self = $o;
 }
 
 
@@ -125,7 +125,7 @@ sub get_offset {
     my ($self) = @_;
     
     
-    return $truncation_offset_of{$self};
+    return $$self;
 }
 
     

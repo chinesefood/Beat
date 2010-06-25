@@ -129,7 +129,7 @@ sub set_data {
     my ($self, $d) = @_;
 
 
-    $data_of{$self} = $d;
+    $$self = $d;
 }
 
 
@@ -143,7 +143,7 @@ sub get_data {
     my ($self) = @_;
 
 
-    return $data_of{$self};
+    return $$self;
 }
 
 
