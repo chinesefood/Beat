@@ -8,7 +8,6 @@ use diagnostics;
 
 use Carp;
 use Fcntl qw(:seek);
-use IO::File;
 
 
 use Beat::Record;
@@ -32,6 +31,25 @@ sub new {
     
     return $self->_init($args_ref);
 }
+
+
+
+
+
+
+
+
+# sub make_rle {
+    # my ($self, $args_ref) = @_;
+
+    # my $diff = Beat::Diff->new();
+    
+    # my @records = (
+        # $diff->generate_rle_records($args_ref),
+    # );
+    
+    # $self->set_all_records(\@records);
+# }
 
 
 

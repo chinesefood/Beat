@@ -140,7 +140,6 @@ can_ok('Beat::Diff', @methods);
     
     
     is @records, 2, 'Case 4:  Deltas Larger Than 2^16';
- 
 }
 
 

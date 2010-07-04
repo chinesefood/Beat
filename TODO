@@ -1,12 +1,16 @@
 TODO
 
-1.0     Documented release
+Post 1.0
+RLE Patch creation support
+Improved patching algorithm resulting in smaller patch sizes
+    (on the backburner for now)
 
-0.9     Refactoring
+1.0
+Documented release
 
-0.8     Error Handling
+0.9
+Refactoring
 
-0.7     Anonymous scalars will contain data for delta
-        IPS RLE patch creation support
-        
-0.6     IPS patch creation support
+0.8
+Error Handling
+
